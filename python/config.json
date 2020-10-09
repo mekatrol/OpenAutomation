@@ -13,6 +13,13 @@
         "topicHostName": "irrigation",
         "monitors": [
             {
+                "name": "usage",
+                "cmd": "[internal]",
+                "params": "diskusage /",
+                "topic": "monitor/host/disk/{topicHostName}",
+                "interval": 5
+            },
+            {
                 "name": "arm",
                 "cmd": "vcgencmd",
                 "params": "measure_clock {name}",

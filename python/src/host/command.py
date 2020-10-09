@@ -1,4 +1,5 @@
 import re
+import shutil
 from subprocess import check_output, CalledProcessError
 
 class Command:
@@ -17,3 +18,9 @@ class Command:
 
         # Return the output
         return out
+
+    @staticmethod
+    def disk_usage(path):
+        total, used, free = shutil.disk_usage(path)
+        return total, used, free
+        

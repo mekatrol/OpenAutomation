@@ -2,18 +2,11 @@ import paho.mqtt.client as mqtt
 
 
 def on_connect(client, userdata, flags, rc):
+    # userdata is set to the Mqtt class instance
     if rc == 0:
         userdata.connected = true
     else:
-        print("Bad connect code: " + str(rc))
         userdata.connected = False
-
-        # Don't bother subscribing if connection failed
-        return
-
-    # Subscribing in on_connect() means that if we lose the connection and
-    # reconnect then subscriptions will be renewed.
-    userdata.client.subscribe("irrigation/status")
 
 
 def on_message(client, userdata, msg):
@@ -21,7 +14,7 @@ def on_message(client, userdata, msg):
 
 
 class Mqtt:
-    def __init__(self):
+    def __init__(self, config):
         # Connection credentials (if needed)
         self.mqtt_username = None
         self.mqtt_password = None
@@ -32,7 +25,9 @@ class Mqtt:
         self.connected = False
         self.client = mqtt.Client(userdata=self)
 
-    def init(self, config):
+        self.__init(config)
+
+    def __init(self, config):
         # Wire up events
         self.client.on_connect = on_connect
         self.client.on_message = on_message

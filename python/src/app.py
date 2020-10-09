@@ -30,9 +30,8 @@ def main():
     if "app" in config and "loopSleepTime" in config["app"]:
         loopSleepTime = config["app"]["loopSleepTime"]
 
-    mqtt = Mqtt()
-
-    mqtt.init(config)
+    # Create the MQTT instance
+    mqtt = Mqtt(config)
     mqtt.connect()
 
     host_monitor = Monitor(config, mqtt)

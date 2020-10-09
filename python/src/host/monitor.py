@@ -1,3 +1,4 @@
+import json
 import re
 import socket
 from host.command import Command
@@ -63,12 +64,16 @@ class MonitorItem:
         if topic == None:
             # No topic then no publish end point
             return
-            
+
         # Format the topic using any defined parameters
         topic = topic.format(name=self.name, topicHostName=topic_host_name)
 
+        # Is this an internal command?
+        if "[internal]" == self.cmd:
+            return self.__internal_command(params, topic, mqtt)
+
         # Execute command
-        out = Command.execute([ self.cmd ], params.split())
+        out = Command.execute([self.cmd], params.split())
 
         # Is there a regular expression to process the output
         if self.regex != None:
@@ -81,6 +86,33 @@ class MonitorItem:
 
         # Pusblish the value
         mqtt.publish(topic, out)
+
+    def __internal_command(self, params, topic, mqtt):
+        if params == None or len(params) == 0 or mqtt == None:
+            raise Exception("Missing params or mqtt")
+
+        # Split params in to parts
+        param_parts = params.split()
+
+        if param_parts[0] == "diskusage":
+            # For disk usage params should be something like 'diskusage /'
+            path = "/"
+            if len(param_parts) > 1:
+                path = param_parts[1]
+
+            total, used, free = Command.disk_usage(path)
+
+            payload = {
+                "path": path,
+                "total": total,
+                "used": used,
+                "free": free
+            }
+
+            # Pusblish the value
+            mqtt.publish(topic, json.dumps(payload))
+
+        return
 
 
 class Monitor:
