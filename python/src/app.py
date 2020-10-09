@@ -1,8 +1,8 @@
 import json
 import time
 import os.path
-from host.rpi import *
-from communication.mqtt import Mqqt
+from host.monitor import Monitor
+from communication.mqtt import Mqtt
 
 CONFIG_FILE_NAME = "config.json"
 
@@ -30,32 +30,23 @@ def main():
     if "app" in config and "loopSleepTime" in config["app"]:
         loopSleepTime = config["app"]["loopSleepTime"]
 
-    mqqt = Mqqt()
+    mqtt = Mqtt()
 
-    mqqt.init(config)
-    mqqt.connect()
+    mqtt.init(config)
+    mqtt.connect()
+
+    host_monitor = Monitor(config, mqtt)
 
     try:
         while True:
-            temp = host_get_cpu_temp()
-            mqqt.publish("irrigation/host/cpu_temp", temp)
-
-            temp = host_get_gpu_temp()
-            mqqt.publish("irrigation/host/gpu_temp", temp)
-
-            clock = host_get_cpu_clock()
-            mqqt.publish("irrigation/host/cpu_clock", clock)
-
-            status = host_get_throttled_status()
-            mqqt.publish("irrigation/host/throttled_status", status)
-
-            time.sleep(3)
+            host_monitor.tick()
+            time.sleep(loopSleepTime)
 
     except KeyboardInterrupt:
         pass
 
     finally:
-        mqqt.close()
+        mqtt.close()
 
 
 if __name__ == "__main__":

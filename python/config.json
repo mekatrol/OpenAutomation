@@ -1,26 +1,49 @@
 {
     "app": {
-        "loopSleepTime": 3
+        "loopSleepTime": 1
     },
-    "mqqt": {
-        "host": "192.168.1.38",
-        "port": 1883,
-        "keep_alive": 60,
-        "username": "homeassistant",
-        "password": "zaiviek0lae7oxuxooyee6theochaihah3iaK8tahx9Aibai3Eiwe5pa5ahch5wa"
-    },
-    "tasks": [
-        {
-            "type": "host/cpu_temperature",
-            "topic": "dev/host/cpu_temperature"
+    "mqtt": {
+        "broker": {
+            "host": "192.168.1.38",
+            "port": 1883,
+            "keep_alive": 60,
+            "username": "homeassistant",
+            "password": "zaiviek0lae7oxuxooyee6theochaihah3iaK8tahx9Aibai3Eiwe5pa5ahch5wa"
         },
-        {
-            "type": "host/gpu_temperature",
-            "topic": "dev/host/gpu_temperature"
-        },
-        {
-            "type": "host/throttled_status",
-            "topic": "dev/host/throttled_status"
-        }
-    ]
+        "topicHostName": "irrigation",
+        "monitors": [
+            {
+                "name": "arm",
+                "cmd": "vcgencmd",
+                "params": "measure_clock {name}",
+                "topic": "monitor/host/clock/{name}/{topicHostName}",
+                "regex": "=(\\d+)",
+                "interval": 5
+            },
+            {
+                "name": "cpu",
+                "cmd": "vcgencmd",
+                "params": "measure_temp",
+                "topic": "monitor/host/temp/{name}/{topicHostName}",
+                "regex": "(\\d+\\.{0,1}\\d*)",
+                "interval": 5
+            },
+            {
+                "name": "gpu",
+                "cmd": "cat",
+                "params": "/sys/class/thermal/thermal_zone0/temp",
+                "topic": "monitor/host/temp/{name}/{topicHostName}",
+                "regex": "(\\d+\\.{0,1}\\d*)",
+                "interval": 5
+            },
+            {
+                "name": "core",
+                "cmd": "vcgencmd",
+                "params": "measure_volts {name}",
+                "topic": "monitor/host/voltage/{name}/{topicHostName}",
+                "regex": "(\\d+\\.{0,1}\\d*)",
+                "interval": 5
+            }
+        ]
+    }
 }
