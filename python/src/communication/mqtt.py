@@ -4,13 +4,15 @@ import paho.mqtt.client as mqtt
 def on_connect(client, userdata, flags, rc):
     # userdata is set to the Mqtt class instance
     if rc == 0:
-        userdata.connected = true
+        userdata.connected = True
     else:
         userdata.connected = False
 
 
 def on_message(client, userdata, msg):
-    print(msg.topic + " " + str(msg.payload))
+    if msg.topic in userdata.subscribe_callbacks:
+        callback = userdata.subscribe_callbacks[msg.topic]
+        callback(msg.payload)
 
 
 class Mqtt:
@@ -24,6 +26,7 @@ class Mqtt:
 
         self.connected = False
         self.client = mqtt.Client(userdata=self)
+        self.subscribe_callbacks = {}
 
         self.__init(config)
 
@@ -48,11 +51,11 @@ class Mqtt:
                     self.mqtt_username = config["mqtt"]["broker"]["username"]
 
                 if "password" in config["mqtt"]["broker"]:
-                    self. mqtt_password = config["mqtt"]["broker"]["password"]
+                    self.mqtt_password = config["mqtt"]["broker"]["password"]
 
         if not self.mqtt_username == None:
             self.client.username_pw_set(
-                self. mqtt_username,
+                self.mqtt_username,
                 password=self.mqtt_password)
 
     def close(self):
@@ -64,3 +67,11 @@ class Mqtt:
 
     def publish(self, topic, value):
         self.client.publish(topic, value)
+
+    def subscribe(self, topic, callback):
+        if topic != None and callback != None:
+            self.client.subscribe(topic)
+            self.subscribe_callbacks[topic] = callback
+
+    def loop(self, timeout):
+        self.client.loop(timeout=timeout, max_packets=1)

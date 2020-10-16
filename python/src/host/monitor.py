@@ -1,6 +1,5 @@
 import json
 import re
-import socket
 from host.command import Command
 
 
@@ -116,7 +115,7 @@ class MonitorItem:
 
 
 class Monitor:
-    def __init__(self, config, mqtt):
+    def __init__(self, config, mqtt, topic_host_name):
         if not "mqtt" in config or not "monitors" in config["mqtt"] or mqtt == None:
             # Nothing to monitor and publish
             return
@@ -124,16 +123,8 @@ class Monitor:
         # Keep reference to mqtt client
         self._mqtt = mqtt
 
-        # Default topic host name to None
-        self._topic_host_name = None
-
-        # Read the host name if defined (can be used for string formatting)
-        if "topicHostName" in config["mqtt"]:
-            self._topic_host_name = config["mqtt"]["topicHostName"]
-
-        # If set to null (or None in python terms) then get the hostname for current device code is running on
-        if self._topic_host_name == None:
-            self._topic_host_name = socket.gethostname()
+        # Keep topic host name
+        self._topic_host_name = topic_host_name
 
         # Create the monitor items from the monitor config
         self._monitors = [MonitorItem(c)
