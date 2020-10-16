@@ -3,6 +3,7 @@ import time
 import os.path
 from host.monitor import Monitor
 from communication.mqtt import Mqtt
+from controllers.shift_register import ShiftRegister
 
 CONFIG_FILE_NAME = "config.json"
 
@@ -36,6 +37,8 @@ def main():
 
     host_monitor = Monitor(config, mqtt)
 
+    shift_register = ShiftRegister(2, 27, 4, 22, 17, None)
+
     try:
         while True:
             host_monitor.tick()
@@ -46,6 +49,7 @@ def main():
 
     finally:
         mqtt.close()
+        shift_register.close()
 
 
 if __name__ == "__main__":
