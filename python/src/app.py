@@ -83,7 +83,7 @@ def main():
         shift_register = ShiftRegister(
             device_count, data_pin, clock_pin, latch_pin, oe_pin, clear_pin)
         output_controller = OutputController(
-            config, shift_register, mqtt, topic_host_name)
+            config, shift_register, device_count, mqtt, topic_host_name)
 
     try:
         while True:

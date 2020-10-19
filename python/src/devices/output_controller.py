@@ -42,7 +42,7 @@ class Zone:
 
 
 class OutputController:
-    def __init__(self, config, shift_register, mqtt, topic_host_name):
+    def __init__(self, config, shift_register, device_count, mqtt, topic_host_name):
         if not "mqtt" in config or not "irrigation" in config or mqtt == None:
             # Nothing to control
             return
@@ -50,6 +50,9 @@ class OutputController:
         # Keep references to other devices
         self._shift_register = shift_register
         self._mqtt = mqtt
+
+        # Keep device count
+        self._device_count = device_count
 
         # Keep topic host name
         self._topic_host_name = topic_host_name
@@ -69,20 +72,22 @@ class OutputController:
                     "set", self._topic_host_name), zone.callback)
 
     def tick(self):
+        # Enumerate the zones, update state and calculate shift bit value
+        value = 0
+        shift = 1
+
         for zone in self._zones:
             zone.tick(self._mqtt)
+            if zone.value == b"on":
+                value |= shift
+            
+            shift <<= 1
 
-        bytes = [0x00, 0x00]
+        # Convert to byte array containing the number of devices
+        # using little endian ordering for the array
+        bytes = value.to_bytes(self._device_count, 'big')
 
-        zoneIndex = None
-        for index, z in enumerate(self._zones):
-            if z.key == "1":
-                zoneIndex = index
-
-        zone = self._zones[zoneIndex]
-        if(zone.value == b"on"):
-            bytes = [0x01, 0x00]
-
+        # Shift bit values to output shift register
         self._shift_register.clear_latch()
         self._shift_register.shift_bytes(bytes)
         self._shift_register.set_latch()
