@@ -9,7 +9,6 @@ import RPi.GPIO as GPIO
 from host.monitor import Monitor
 from communication.mqtt import Mqtt
 from controllers.io_manager import IoManager
-from controllers.shift_register import ShiftRegister
 from devices.output_controller import OutputController
 from devices.input_controller import InputController
 
@@ -61,12 +60,6 @@ def main():
     # device_folder = devices[0]
     # device_file_name = device_folder + '/w1_slave'
 
-    # Only initalise output controller if shift register defined
-    # if "sr1" in io_manager.shift_registers:
-    #     shift_register_def = io_manager.shift_registers["sr1"]
-
-    #     shift_register = ShiftRegister(io_manager, shift_register_def)
-
     try:
         x = 0
         while True:
@@ -76,11 +69,14 @@ def main():
             # Process host monitor tick
             host_monitor.tick()
 
+            # Process input controller tick
+            input_controller.tick()
+
             # Process output controller tick
             output_controller.tick()
 
-            # Process input controller tick
-            input_controller.tick()
+            # Process shift register shifting
+            io_manager.shift_values()
 
             # Sleep a bit
             time.sleep(loopSleepTime)
@@ -90,7 +86,6 @@ def main():
 
     finally:
         mqtt.close()
-        shift_register.close()
 
 
 if __name__ == "__main__":

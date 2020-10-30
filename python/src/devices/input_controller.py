@@ -1,5 +1,6 @@
 class Input:
     def __init__(self, input_def, io_manager, mqtt, topic_host_name):
+        self.key = input_def["key"]
         self._input_def = input_def
         self._io_manager = io_manager
         self._mqtt = mqtt
@@ -25,14 +26,13 @@ class Input:
             # Reset countdown from interval
             self._count_down = self._interval
 
-        key = self._input_def["key"]
         name = self._input_def["name"]
-        value = self._io_manager.input(key)
+        value = self._io_manager.input(self.key)
         topic_template = self._input_def["topic"]
 
         if topic_template != None:
             topic_built = topic_template.format(
-                key=key, name=name, topicHostName=self._topic_host_name)
+                key=self.key, name=name, topicHostName=self._topic_host_name)
             self._mqtt.publish(topic_built, value)
 
 
@@ -48,4 +48,8 @@ class InputController:
 
     def tick(self):
         for inp in self._inputs:
+            # Do not call tick on pins dedicated to other functions (eg pins that are dedicated to SPI device)
+            if inp.key in self._io_manager.dedicated_inputs:
+                continue
+
             inp.tick()

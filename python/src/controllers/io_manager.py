@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+from controllers.shift_register import ShiftRegister
 
 
 class IoManager:
@@ -24,6 +25,12 @@ class IoManager:
         else:
             raise Exception("Mode value must be set to 'BCM' or 'BOARD'")
 
+        # Dedicated IO pins are those GPIO pins that a dedicated to 
+        # another purpose (eg shift register control pin). The should not
+        # be controllable as a general IO pin
+        self.dedicated_inputs = {}
+        self.dedicated_outputs = {}
+
         # Are there inputs defined?
         if "inputs" in io_conf:
             self.__init_inputs(io_conf["inputs"])
@@ -46,7 +53,47 @@ class IoManager:
         if not key in self.outputs:
             raise Exception(f"Invalid output key '{key}'")
 
-        return GPIO.output(self.outputs[key]["pin"], value)
+        out = self.outputs[key]
+
+        if out["type"] == "GPIO":
+            GPIO.output(out["pin"], value)
+
+        elif out["type"] == "SR":
+            shift_register_def = self._shift_register_defs[out["shift_register_key"]]
+
+            pin = out["pin"]
+
+            # Get the device number that the pin belongs to
+            device = int(pin / 8)
+
+            # Get the pin number on the device (modulo 8 as a bits per device)
+            pin = pin % 8
+
+            pin_shifted_value = 1 << (pin - 1)
+
+            if value == 1:
+                shift_register_def["output_values"][device] |= pin_shifted_value
+            else:
+                shift_register_def["output_values"][device] &= ~pin_shifted_value
+
+        else:
+            out_type = out["type"]
+            raise Exception(
+                f"Invalid output type '{out_type}' for output with key '{key}'")
+
+    def shift_values(self):
+        for key in self._shift_register_defs:
+            shift_register_def = self._shift_register_defs[key]
+            shift_register = self._shift_registers[key]
+
+            outputs = bytes(shift_register_def["output_values"])
+
+            #shift_bytes = outputs.to_bytes(shift_register_def["devices"], 'big')
+
+            # Shift bit values to output shift register
+            shift_register.clear_latch()
+            shift_register.shift_bytes(outputs)
+            shift_register.set_latch()
 
     def __init_inputs(self, inputs):
         self.inputs = {}
@@ -146,6 +193,7 @@ class IoManager:
             name = None
             topic = None
             interval = 1
+            shift_register_key = None
 
             # Validate type
             if pin_type != "GPIO" and pin_type != "SR":
@@ -162,6 +210,13 @@ class IoManager:
             # If optional interval defined then get value
             if "interval" in output_config:
                 interval = output_config["interval"]
+
+            # If optional shift register key defined then get value
+            if pin_type == "SR":
+                if not "shiftRegisterKey" in output_config:
+                    raise Exception(
+                        f"shiftRegisterkey property must be defined for output with key '{key}'")
+                shift_register_key = output_config["shiftRegisterKey"]
 
             # Key must be a valid string and must not be empty
             if not key or type(key) != str:
@@ -183,7 +238,8 @@ class IoManager:
                 "type": pin_type,
                 "pin": pin,
                 "topic": topic,
-                "interval": interval
+                "interval": interval,
+                "shift_register_key": shift_register_key
             }
 
             self.outputs[key] = out
@@ -192,7 +248,8 @@ class IoManager:
                 GPIO.setup(out["pin"], GPIO.OUT)
 
     def __init_shift_registers(self, shift_registers):
-        self.shift_registers = {}
+        self._shift_register_defs = {}
+        self._shift_registers = {}
 
         # Setup shift registers
         for shift_register_config in shift_registers:
@@ -253,12 +310,27 @@ class IoManager:
             if "name" in shift_register_config:
                 name = shift_register_config["name"]
 
+            # Create array to hold 8 bit values for each device
+            output_values =[0] * devices
+
             # Can't add same key twice
-            if key in self.shift_registers:
+            if key in self._shift_register_defs:
                 raise Exception(
                     "Shift register with key '{key}' already defined")
 
-            shift_register = {
+            # Add shift register pin keys to dedicated pin set
+            self.dedicated_outputs[data] = True
+            self.dedicated_outputs[clock] = True
+            self.dedicated_outputs[data] = True
+            self.dedicated_outputs[latch] = True
+
+            if oe:
+                self.dedicated_outputs[oe] = True
+            
+            if clear:
+                self.dedicated_outputs[clear] = True
+
+            shift_register_def = {
                 "key": key,
                 "name": name,
                 "devices": devices,
@@ -266,7 +338,13 @@ class IoManager:
                 "clock": clock,
                 "latch": latch,
                 "oe": oe,
-                "clear": clear
+                "clear": clear,
+                "output_values": output_values
             }
 
-            self.shift_registers[key] = shift_register
+            # Add definition
+            self._shift_register_defs[key] = shift_register_def
+
+            # Create and add shift register
+            shift_register = ShiftRegister(self, shift_register_def)
+            self._shift_registers[key] = shift_register
