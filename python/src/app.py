@@ -52,9 +52,8 @@ def main():
     host_monitor = Monitor(config, mqtt, topic_host_name)
 
     io_manager = IoManager(config)
-
     input_controller = InputController(io_manager, mqtt, topic_host_name)
-
+    output_controller = OutputController(io_manager, mqtt, topic_host_name)
 
     # Create temp sensor
     # base_dir = '/sys/bus/w1/devices/'
@@ -63,13 +62,10 @@ def main():
     # device_file_name = device_folder + '/w1_slave'
 
     # Only initalise output controller if shift register defined
-    if "sr1" in io_manager.shift_registers:
-        shift_register_def = io_manager.shift_registers["sr1"]
+    # if "sr1" in io_manager.shift_registers:
+    #     shift_register_def = io_manager.shift_registers["sr1"]
 
-        shift_register = ShiftRegister(io_manager, shift_register_def)
-        
-        output_controller = OutputController(
-            config, shift_register, shift_register_def["devices"], mqtt, topic_host_name)
+    #     shift_register = ShiftRegister(io_manager, shift_register_def)
 
     try:
         x = 0

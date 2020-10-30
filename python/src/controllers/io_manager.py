@@ -145,6 +145,7 @@ class IoManager:
             pin = output_config["pin"]
             name = None
             topic = None
+            interval = 1
 
             # Validate type
             if pin_type != "GPIO" and pin_type != "SR":
@@ -157,6 +158,10 @@ class IoManager:
             # If optional topic defined then get value
             if "topic" in output_config:
                 topic = output_config["topic"]
+
+            # If optional interval defined then get value
+            if "interval" in output_config:
+                interval = output_config["interval"]
 
             # Key must be a valid string and must not be empty
             if not key or type(key) != str:
@@ -177,7 +182,8 @@ class IoManager:
                 "name": name,
                 "type": pin_type,
                 "pin": pin,
-                "topc": topic
+                "topic": topic,
+                "interval": interval
             }
 
             self.outputs[key] = out
