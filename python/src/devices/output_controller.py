@@ -16,6 +16,7 @@ class Zone:
     def tick(self, mqtt):
         # Use interval if defined
         if self._interval != None:
+            
             # Decrement count down
             self._count_down -= 1
 

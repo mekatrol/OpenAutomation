@@ -36,6 +36,18 @@ class IoManager:
         if "shiftRegisters" in io_conf:
             self.__init_shift_registers(io_conf["shiftRegisters"])
 
+    def input(self, key):
+        if not key in self.inputs:
+            raise Exception(f"Invalid input key '{key}'")
+
+        return GPIO.input(self.inputs[key]["pin"])
+
+    def output(self, key, value):
+        if not key in self.outputs:
+            raise Exception(f"Invalid output key '{key}'")
+
+        return GPIO.output(self.outputs[key]["pin"], value)
+
     def __init_inputs(self, inputs):
         self.inputs = {}
 
@@ -57,11 +69,21 @@ class IoManager:
             key = input_config["key"]
             pin = input_config["pin"]
             pud = GPIO.PUD_OFF
-            name = ""
+            name = None
+            topic = None
+            interval = 1
 
             # If optional name defined then get value
             if "name" in input_config:
                 name = input_config["name"]
+
+            # If optional topic defined then get value
+            if "topic" in input_config:
+                topic = input_config["topic"]
+
+            # If optional interval defined then get value
+            if "interval" in input_config:
+                interval = input_config["interval"]
 
             # Convert pull_up_down definition
             if input_config["pud"] == "PUD_UP":
@@ -91,7 +113,9 @@ class IoManager:
                 "key": key,
                 "name": name,
                 "pin": pin,
-                "pud": pud
+                "pud": pud,
+                "topic": topic,
+                "interval": interval
             }
 
             self.inputs[key] = inp
@@ -111,14 +135,28 @@ class IoManager:
                 raise Exception(
                     "'pin' property must be defined for all outputs")
 
+            if not "type" in output_config:
+                raise Exception(
+                    "'type' property must be defined for all outputs")
+
             # Get property default values
             key = output_config["key"]
+            pin_type = output_config["type"]
             pin = output_config["pin"]
-            name = ""
+            name = None
+            topic = None
+
+            # Validate type
+            if pin_type != "GPIO" and pin_type != "SR":
+                raise Exception("Output invalid 'type' property value")
 
             # If optional name defined then get value
             if "name" in output_config:
                 name = output_config["name"]
+
+            # If optional topic defined then get value
+            if "topic" in output_config:
+                topic = output_config["topic"]
 
             # Key must be a valid string and must not be empty
             if not key or type(key) != str:
@@ -137,12 +175,15 @@ class IoManager:
             out = {
                 "key": key,
                 "name": name,
-                "pin": pin
+                "type": pin_type,
+                "pin": pin,
+                "topc": topic
             }
 
             self.outputs[key] = out
 
-            GPIO.setup(out["pin"], GPIO.OUT)
+            if out["type"] == "GPIO":
+                GPIO.setup(out["pin"], GPIO.OUT)
 
     def __init_shift_registers(self, shift_registers):
         self.shift_registers = {}
@@ -165,10 +206,15 @@ class IoManager:
                 raise Exception(
                     "'latch' property must be defined for all shift registers")
 
-            output_enable = None
+            if not "devices" in shift_register_config:
+                raise Exception(
+                    "'devices' property must be defined for all shift registers")
+
+            oe = None
             clear = None
 
             key = shift_register_config["key"]
+            devices = shift_register_config["devices"]
             data = shift_register_config["data"]
             clock = shift_register_config["clock"]
             latch = shift_register_config["latch"]
@@ -185,11 +231,11 @@ class IoManager:
                 raise Exception(
                     f"Latch output name '{latch}' not a valid output name")
 
-            if "outputEnable" in shift_register_config:
-                output_enable = shift_register_config["outputEnable"]
-                if output_enable != None and not output_enable in self.outputs:
+            if "oe" in shift_register_config:
+                oe = shift_register_config["oe"]
+                if oe != None and not oe in self.outputs:
                     raise Exception(
-                        f"Output enable output name '{output_enable}' not a valid output name")
+                        f"Output enable output name '{oe}' not a valid output name")
 
             if "clear" in shift_register_config:
                 clear = shift_register_config["clear"]
@@ -209,10 +255,11 @@ class IoManager:
             shift_register = {
                 "key": key,
                 "name": name,
+                "devices": devices,
                 "data": data,
                 "clock": clock,
                 "latch": latch,
-                "output_enable": output_enable,
+                "oe": oe,
                 "clear": clear
             }
 

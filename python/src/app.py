@@ -11,7 +11,7 @@ from communication.mqtt import Mqtt
 from controllers.io_manager import IoManager
 from controllers.shift_register import ShiftRegister
 from devices.output_controller import OutputController
-
+from devices.input_controller import InputController
 
 CONFIG_FILE_NAME = "config.json"
 
@@ -51,15 +51,10 @@ def main():
 
     host_monitor = Monitor(config, mqtt, topic_host_name)
 
-    ioManager = IoManager(config)
+    io_manager = IoManager(config)
 
-    device_count = 1
-    data_pin = ioManager.outputs["sr1_data"]["pin"]
-    clock_pin = ioManager.outputs["sr1_clock"]["pin"]
-    latch_pin = ioManager.outputs["sr1_latch"]["pin"]
-    oe_pin = ioManager.outputs["sr1_oe"]["pin"]
-    clear_pin = None
-    zone_config = {}
+    input_controller = InputController(io_manager, mqtt, topic_host_name)
+
 
     # Create temp sensor
     # base_dir = '/sys/bus/w1/devices/'
@@ -67,24 +62,14 @@ def main():
     # device_folder = devices[0]
     # device_file_name = device_folder + '/w1_slave'
 
-    if "irrigation" in config:
-        if "zones" in config["irrigation"]:
-            zone_config = config["irrigation"]["zones"]
+    # Only initalise output controller if shift register defined
+    if "sr1" in io_manager.shift_registers:
+        shift_register_def = io_manager.shift_registers["sr1"]
 
-            # Get the number zones
-            zone_count = len(zone_config)
-
-            # There are 8 bits per shift register device
-            device_count = int(zone_count / 8)
-            if (zone_count - (device_count * 8)) % 8 > 0:
-                device_count += 1
-
-    # Only initalise output controller if device count and minimum pins defined has value
-    if device_count != None and data_pin != None and clock_pin != None and latch_pin != None:
-        shift_register = ShiftRegister(
-            device_count, data_pin, clock_pin, latch_pin, oe_pin, clear_pin)
+        shift_register = ShiftRegister(io_manager, shift_register_def)
+        
         output_controller = OutputController(
-            config, shift_register, device_count, mqtt, topic_host_name)
+            config, shift_register, shift_register_def["devices"], mqtt, topic_host_name)
 
     try:
         x = 0
@@ -98,13 +83,8 @@ def main():
             # Process output controller tick
             output_controller.tick()
 
-            x = x + 1
-            if x % 3 == 0:
-                in_1 = GPIO.input(18)
-                in_2 = GPIO.input(24)
-
-                mqtt.publish("/monitor/control/in/input1/irrigation", in_1)
-                mqtt.publish("/monitor/control/in/input2/irrigation", in_2)
+            # Process input controller tick
+            input_controller.tick()
 
             # Sleep a bit
             time.sleep(loopSleepTime)

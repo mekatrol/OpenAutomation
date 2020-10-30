@@ -2,13 +2,19 @@ import RPi.GPIO as GPIO
 
 
 class ShiftRegister:
-    def __init__(self, devices, data, clock, latch, oe, clear):
-        self._devices = devices
-        self._data = data
-        self._clock = clock
-        self._latch = latch
-        self._oe = oe
-        self._clear = clear
+    def __init__(self, io_manager, shift_register_def):
+        self._devices = shift_register_def["devices"]
+        self._data = io_manager.outputs[shift_register_def["data"]]["pin"]
+        self._clock = io_manager.outputs[shift_register_def["clock"]]["pin"]
+        self._latch = io_manager.outputs[shift_register_def["latch"]]["pin"]
+        
+        self._oe = None
+        if shift_register_def["oe"]:
+            self._oe = io_manager.outputs[shift_register_def["oe"]]["pin"]
+        
+        self._clear = None        
+        if shift_register_def["clear"]:
+            io_manager.outputs[shift_register_def["clear"]]["pin"]
 
         self.__init_pins()
 
