@@ -2,6 +2,58 @@
     "app": {
         "loopSleepTime": 0.2
     },
+    "io": {
+        "mode": "BCM",
+        "inputs": [
+            {
+                "key": "mister_switch",
+                "name": "Mister switch",
+                "topic": "/monitor/control/in/{key}/{topicHostName}",
+                "pin": 18,
+                "pud": "PUD_UP"
+            },
+            {
+                "key": "light_switch",
+                "name": "Light switch",
+                "topc": "/monitor/control/in/{key}/{topicHostName}",
+                "pin": 24,
+                "pud": "PUD_UP"
+            }
+        ],
+        "outputs": [
+            {
+                "key": "sr1_data",
+                "name": "Shift register 1 data pin",
+                "pin": 27
+            },
+            {
+                "key": "sr1_clock",
+                "name": "Shift register 1 clock pin",
+                "pin": 4
+            },
+            {
+                "key": "sr1_latch",
+                "name": "Shift register 1 latch pin",
+                "pin": 22
+            },
+            {
+                "key": "sr1_oe",
+                "name": "Shift register 1 output enable pin",
+                "pin": 17
+            }
+        ],
+        "shiftRegisters": [
+            {
+                "key": "sr1",
+                "name": "Shift register 1",
+                "data": "sr1_data",
+                "clock": "sr1_clock",
+                "latch": "sr1_latch",
+                "outputEnable": "sr1_oe",
+                "clear": null
+            }
+        ]
+    },
     "irrigation": {
         "storePath": "/etc/open.automation/irrigation/",
         "shiftRegister": {
@@ -9,7 +61,7 @@
             "clock": 4,
             "latch": 22,
             "outputEnable": 17,
-            "clear": 0
+            "clear": null
         },
         "zones": [
             {

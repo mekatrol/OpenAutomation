@@ -56,20 +56,6 @@ class ShiftRegister:
         GPIO.output(self._latch, 1)
 
     def __init_pins(self):
-        GPIO.setmode(GPIO.BCM)
-
-        # Init mandatory pins
-        GPIO.setup(self._data, GPIO.OUT)
-        GPIO.setup(self._clock, GPIO.OUT)
-        GPIO.setup(self._latch, GPIO.OUT)
-
-        # Init optional pins if set
-        if self._oe != None:
-            GPIO.setup(self._oe, GPIO.OUT)
-
-        if self._clear != None:
-            GPIO.setup(self._clear, GPIO.OUT)
-
         # Clear current registers
         self.shift_clear_all()
 

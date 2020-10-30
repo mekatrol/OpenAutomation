@@ -8,6 +8,7 @@ import RPi.GPIO as GPIO
 
 from host.monitor import Monitor
 from communication.mqtt import Mqtt
+from controllers.io_manager import IoManager
 from controllers.shift_register import ShiftRegister
 from devices.output_controller import OutputController
 
@@ -50,11 +51,13 @@ def main():
 
     host_monitor = Monitor(config, mqtt, topic_host_name)
 
-    device_count = None
-    data_pin = None
-    clock_pin = None
-    latch_pin = None
-    oe_pin = None
+    ioManager = IoManager(config)
+
+    device_count = 1
+    data_pin = ioManager.outputs["sr1_data"]["pin"]
+    clock_pin = ioManager.outputs["sr1_clock"]["pin"]
+    latch_pin = ioManager.outputs["sr1_latch"]["pin"]
+    oe_pin = ioManager.outputs["sr1_oe"]["pin"]
     clear_pin = None
     zone_config = {}
 
@@ -65,19 +68,6 @@ def main():
     # device_file_name = device_folder + '/w1_slave'
 
     if "irrigation" in config:
-        if "shiftRegister" in config["irrigation"]:
-            shift_register_config = config["irrigation"]["shiftRegister"]
-            if "data" in shift_register_config:
-                data_pin = shift_register_config["data"]
-            if "clock" in shift_register_config:
-                clock_pin = shift_register_config["clock"]
-            if "latch" in shift_register_config:
-                latch_pin = shift_register_config["latch"]
-            if "outputEnable" in shift_register_config:
-                oe_pin = shift_register_config["outputEnable"]
-            if "clear" in shift_register_config:
-                clear_pin = shift_register_config["clear"]
-
         if "zones" in config["irrigation"]:
             zone_config = config["irrigation"]["zones"]
 
