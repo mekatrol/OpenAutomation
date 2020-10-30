@@ -1,11 +1,16 @@
+import glob
 import json
 import time
 import os.path
 import socket
+
+import RPi.GPIO as GPIO
+
 from host.monitor import Monitor
 from communication.mqtt import Mqtt
 from controllers.shift_register import ShiftRegister
 from devices.output_controller import OutputController
+
 
 CONFIG_FILE_NAME = "config.json"
 
@@ -53,6 +58,12 @@ def main():
     clear_pin = None
     zone_config = {}
 
+    # Create temp sensor
+    # base_dir = '/sys/bus/w1/devices/'
+    # devices = glob.glob(base_dir + '28*')
+    # device_folder = devices[0]
+    # device_file_name = device_folder + '/w1_slave'
+
     if "irrigation" in config:
         if "shiftRegister" in config["irrigation"]:
             shift_register_config = config["irrigation"]["shiftRegister"]
@@ -86,6 +97,7 @@ def main():
             config, shift_register, device_count, mqtt, topic_host_name)
 
     try:
+        x = 0
         while True:
             # Process MQTT loop
             mqtt.loop(100)
@@ -95,6 +107,14 @@ def main():
 
             # Process output controller tick
             output_controller.tick()
+
+            x = x + 1
+            if x % 3 == 0:
+                in_1 = GPIO.input(18)
+                in_2 = GPIO.input(24)
+
+                mqtt.publish("/monitor/control/in/input1/irrigation", in_1)
+                mqtt.publish("/monitor/control/in/input2/irrigation", in_2)
 
             # Sleep a bit
             time.sleep(loopSleepTime)

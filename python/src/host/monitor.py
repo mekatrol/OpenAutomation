@@ -1,6 +1,7 @@
 import json
 import re
 from host.command import Command
+from devices.one_wire import OneWire
 
 
 class MonitorItem:
@@ -111,7 +112,12 @@ class MonitorItem:
             # Pusblish the value
             mqtt.publish(topic, json.dumps(payload))
 
-        return
+        if param_parts[0] == "onewire":
+            device_name = param_parts[1]
+            temp = OneWire.read_temp(device_name)
+
+            # Pusblish the value
+            mqtt.publish(topic, temp)
 
 
 class Monitor:

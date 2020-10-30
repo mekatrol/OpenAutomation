@@ -112,11 +112,11 @@
     },
     "mqtt": {
         "broker": {
-            "host": "192.168.1.38",
+            "host": "192.168.1.44",
             "port": 1883,
             "keep_alive": 60,
             "username": "homeassistant",
-            "password": "zaiviek0lae7oxuxooyee6theochaihah3iaK8tahx9Aibai3Eiwe5pa5ahch5wa"
+            "password": "phei6shei9foo2Nuid9eimooc4iesheD7tohphaequoow8LinaiTh2oi5oshei0d"
         },
         "topicHostName": "irrigation",
         "monitors": [
@@ -125,6 +125,20 @@
                 "cmd": "[internal]",
                 "params": "diskusage /",
                 "topic": "monitor/host/disk/{topicHostName}",
+                "interval": 5
+            },
+            {
+                "name": "inside",
+                "cmd": "[internal]",
+                "params": "onewire /sys/bus/w1/devices/28-0119390a4b53/w1_slave",
+                "topic": "monitor/host/temp/{name}/{topicHostName}",
+                "interval": 5
+            },
+            {
+                "name": "water",
+                "cmd": "[internal]",
+                "params": "onewire /sys/bus/w1/devices/28-000005d3cced/w1_slave",
+                "topic": "monitor/host/temp/{name}/{topicHostName}",
                 "interval": 5
             },
             {
