@@ -3,7 +3,7 @@
         "loopSleepTime": 0.2
     },
     "io": {
-        "mode": "BCM",
+        "pinNumberingMode": "BCM",
         "inputs": [
             {
                 "key": "mister_switch",
@@ -59,121 +59,14 @@
         "shiftRegisters": [
             {
                 "key": "sr1",
-                "name": "Shift register 1",
+                "name": "Irrigation controller",
                 "devices": 1,
+                "outputsPerDevice": 8,
                 "data": "sr1_data",
                 "clock": "sr1_clock",
                 "latch": "sr1_latch",
                 "oe": "sr1_oe",
                 "clear": null
-            }
-        ]
-    },
-    "irrigation": {
-        "storePath": "/etc/open.automation/irrigation/",
-        "shiftRegister": {
-            "data": 27,
-            "clock": 4,
-            "latch": 22,
-            "outputEnable": 17,
-            "clear": null
-        },
-        "zones": [
-            {
-                "key": "1",
-                "name": "BBQ Area Lawn",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "2",
-                "name": "BBQ Area Beds",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "3",
-                "name": "Back Lawn",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "4",
-                "name": "Greenhouse Garden",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "5",
-                "name": "Veggie Patch",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "6",
-                "name": "Back Side Garden",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "7",
-                "name": "Front Lawn (House Side)",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "8",
-                "name": "Front Lawn (BBQ Side)",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "9",
-                "name": "Front Garden",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "10",
-                "name": "10",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "11",
-                "name": "11",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "12",
-                "name": "12",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "13",
-                "name": "13",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "14",
-                "name": "14",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "15",
-                "name": "15",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
-            },
-            {
-                "key": "16",
-                "name": "16",
-                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "interval": 5
             }
         ]
     },

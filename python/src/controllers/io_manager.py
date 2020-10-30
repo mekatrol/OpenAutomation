@@ -8,97 +8,137 @@ class IoManager:
         if not "io" in config:
             return
 
-        # Get io config
+        # Get IO config
         io_conf = config["io"]
 
-        # Get GPIO mode
-        if not "mode" in io_conf:
-            # Need IO mode to be able to use IO
-            raise Exception("The IO mode has not been defined")
+        # Get GPIO pin numbering mode
+        if not "pinNumberingMode" in io_conf:
+            # Need pin numbering mode to be able to use IO
+            raise Exception("The pin numbering mode has not been defined (using the 'pinNumberingMode' property (valid values: 'BCM', 'BOARD')")
+        pin_numbering_mode = io_conf["pinNumberingMode"]
 
-        io_mode = io_conf["mode"]
-
-        if io_mode == "BCM":
+        # Set GPIO pin numbering mode
+        if pin_numbering_mode == "BCM":
             GPIO.setmode(GPIO.BCM)
-        elif io_mode == "BOARD":
+        elif pin_numbering_mode == "BOARD":
             GPIO.setmode(GPIO.BOARD)
         else:
-            raise Exception("Mode value must be set to 'BCM' or 'BOARD'")
+            raise Exception("pinNumberingMode value must be set to 'BCM' or 'BOARD'")
 
         # Dedicated IO pins are those GPIO pins that a dedicated to 
-        # another purpose (eg shift register control pin). The should not
+        # another purpose (eg shift register control pin). They should not
         # be controllable as a general IO pin
         self.dedicated_inputs = {}
         self.dedicated_outputs = {}
 
-        # Are there inputs defined?
+        # Initialise inputs
         if "inputs" in io_conf:
             self.__init_inputs(io_conf["inputs"])
 
-        # Are there outputs defined?
+        # Initialise outputs
         if "outputs" in io_conf:
             self.__init_outputs(io_conf["outputs"])
 
-        # Are there shift registers defined?
+        # Initialise shift registers
         if "shiftRegisters" in io_conf:
             self.__init_shift_registers(io_conf["shiftRegisters"])
 
     def input(self, key):
+        # To read an input then the input config must exist
         if not key in self.inputs:
             raise Exception(f"Invalid input key '{key}'")
 
+        # Use GPIO to return value based in input config
         return GPIO.input(self.inputs[key]["pin"])
 
     def output(self, key, value):
+        # To write an ouput then the output config must exist
         if not key in self.outputs:
             raise Exception(f"Invalid output key '{key}'")
 
+        # Get the output config
         out = self.outputs[key]
 
+        # If the output is a GPIO type then set output value using
+        # GPIO library
         if out["type"] == "GPIO":
             GPIO.output(out["pin"], value)
 
+        # If the output is a shift register output for a shift register then
+        # update shift register output value
         elif out["type"] == "SR":
+            # Get the referenced shift register
             shift_register_def = self._shift_register_defs[out["shift_register_key"]]
 
-            pin = out["pin"]
+            # Get the number of output bits per device
+            outputs_per_device = shift_register_def["outputs_per_device"]
 
-            # Get the device number that the pin belongs to
-            device = int(pin / 8)
+            # Get the shift register pin number, this is the output number
+            # from 1 to n where n is the max number of outputs for the 
+            # total number of devices.
+            # For example, if there are two 74HC595 devices chained then
+            # the total number of outputs will be 16 (2 devices x 8 outputs each device)
+            shift_register_pin = out["pin"]
 
-            # Get the pin number on the device (modulo 8 as a bits per device)
-            pin = pin % 8
+            # Get the device output number for the pin. Given 8 pins
+            # per device then the device number is simply: floor('pin number' / 8). 
+            # NOTE: python int function 'floors' the number automatically
+            device = int(shift_register_pin / outputs_per_device)
 
-            pin_shifted_value = 1 << (pin - 1)
+            # Get the output pin number for the device that the pin belongs to.
+            # This is simply the pin number modulo 8 (for 8 bits per device)
+            # For example, if there are two 74HC595 devices chained then
+            # Shift register pin 1 will be output pin 1 on the first device, and
+            # shift register pin 8 will aldo be pin 1, but on the second device
+            device_pin = shift_register_pin % outputs_per_device
 
+            # Determine the bit position for the device pin number
+            # For example:
+            #   pin 1 has the shifted binary value 0b0000001
+            #   pin 8 has the shifted binary value 0b1000000
+            pin_shifted_value = 1 << (device_pin - 1)
+
+            # If the value of the output is 1 (on) then we OR the shifted bit
+            # with the device output value, else we AND the complement shifted bit value
+            # For example, for pin 1 we would: 
+            #   for an 'on':  device_output_value |= 0b00000001
+            #   for an 'off': device_output_value &= 0b11111110
+            # For example, for pin 2 we would: 
+            #   for an 'on':  device_output_value |= 0b00000010
+            #   for an 'off': device_output_value &= 0b11111101
             if value == 1:
                 shift_register_def["output_values"][device] |= pin_shifted_value
             else:
                 shift_register_def["output_values"][device] &= ~pin_shifted_value
 
+        # Not a valid type?
         else:
             out_type = out["type"]
             raise Exception(
                 f"Invalid output type '{out_type}' for output with key '{key}'")
 
     def shift_values(self):
+        # For each shift register, update its ouput (shift its values)
         for key in self._shift_register_defs:
+            # Get the shift register definition
             shift_register_def = self._shift_register_defs[key]
+
+            # Get the shift register instance
             shift_register = self._shift_registers[key]
 
+            # Get the output values for the shift register
             outputs = bytes(shift_register_def["output_values"])
 
-            #shift_bytes = outputs.to_bytes(shift_register_def["devices"], 'big')
-
-            # Shift bit values to output shift register
+            # Shift values to output shift register
             shift_register.clear_latch()
             shift_register.shift_bytes(outputs)
             shift_register.set_latch()
 
     def __init_inputs(self, inputs):
+        # Create input definition dictionary
         self.inputs = {}
 
-        # Setup inputs
+        # Iterate input configurations
         for input_config in inputs:
             if not "key" in input_config:
                 raise Exception(
@@ -170,9 +210,10 @@ class IoManager:
             GPIO.setup(inp["pin"], GPIO.IN, pull_up_down=pud)
 
     def __init_outputs(self, outputs):
+        # Create output definition dictionary
         self.outputs = {}
 
-        # Setup outputs
+        # Iterate output configurations
         for output_config in outputs:
             if not "key" in output_config:
                 raise Exception(
@@ -248,10 +289,13 @@ class IoManager:
                 GPIO.setup(out["pin"], GPIO.OUT)
 
     def __init_shift_registers(self, shift_registers):
+        # Create shift register definition dictionary
         self._shift_register_defs = {}
+
+        # Create shift register instance dictionary
         self._shift_registers = {}
 
-        # Setup shift registers
+        # Iterate shift register configurations
         for shift_register_config in shift_registers:
             if not "key" in shift_register_config:
                 raise Exception(
@@ -278,6 +322,7 @@ class IoManager:
 
             key = shift_register_config["key"]
             devices = shift_register_config["devices"]
+            outputs_per_device = 8 # Default to 8 output pins per device 
             data = shift_register_config["data"]
             clock = shift_register_config["clock"]
             latch = shift_register_config["latch"]
@@ -305,6 +350,10 @@ class IoManager:
                 if clear != None and not clear in self.outputs:
                     raise Exception(
                         f"Clear output name '{clear}' not a valid output name")
+
+            # If optional outputs per device defined then get value
+            if "outputsPerDevice" in shift_register_config:
+                outputs_per_device = shift_register_config["outputsPerDevice"]
 
             # If optional name defined then get value
             if "name" in shift_register_config:
@@ -334,6 +383,7 @@ class IoManager:
                 "key": key,
                 "name": name,
                 "devices": devices,
+                "outputs_per_device": outputs_per_device
                 "data": data,
                 "clock": clock,
                 "latch": latch,
