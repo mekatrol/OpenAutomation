@@ -1,4 +1,4 @@
-from devices.output import Output
+from points.output import Output
 
 
 class OutputController:

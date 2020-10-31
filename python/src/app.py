@@ -6,7 +6,7 @@ import socket
 
 import RPi.GPIO as GPIO
 
-from host.monitor import Monitor
+from devices.host_controller import HostController
 from communication.mqtt import Mqtt
 from controllers.io_manager import IoManager
 
@@ -46,7 +46,7 @@ def main():
     mqtt = Mqtt(config)
     mqtt.connect()
 
-    host_monitor = Monitor(config, mqtt, topic_host_name)
+    host_controller = HostController(config, mqtt, topic_host_name)
 
     io_manager = IoManager(config, mqtt, topic_host_name)
 
@@ -59,16 +59,14 @@ def main():
     try:
         mister_sw_last_tick = 0
         light_sw_last_tick = 0
-        i = 0
+
         while True:
-            i += 1
-            print(i)
 
             # Process MQTT loop
             mqtt.loop(10)
 
             # Process host monitor tick
-            host_monitor.tick()
+            host_controller.tick()
 
             # Process IO
             io_manager.tick(mqtt)

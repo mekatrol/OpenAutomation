@@ -2,8 +2,9 @@ import RPi.GPIO as GPIO
 from helpers.dictionary_helper import DictionaryHelper
 from controllers.shift_register import ShiftRegister
 from devices.output_controller import OutputController
-from devices.input import Input
-from devices.output import Output
+from points.input import Input
+from points.output import Output
+from points.virtual import Virtual
 
 
 class IoManager:
@@ -16,11 +17,11 @@ class IoManager:
         io_conf = config["io"]
 
         # Get GPIO pin numbering mode
-        if not "pinNumberingMode" in io_conf:
+        if not "gpioPinNumberingMode" in io_conf:
             # Need pin numbering mode to be able to use IO
             raise Exception(
-                "The pin numbering mode has not been defined (using the 'pinNumberingMode' property (valid values: 'BCM', 'BOARD')")
-        pin_numbering_mode = io_conf["pinNumberingMode"]
+                "The pin numbering mode has not been defined (using the 'gpioPinNumberingMode' property (valid values: 'BCM', 'BOARD')")
+        pin_numbering_mode = io_conf["gpioPinNumberingMode"]
 
         # Set GPIO pin numbering mode
         if pin_numbering_mode == "BCM":
@@ -29,7 +30,7 @@ class IoManager:
             GPIO.setmode(GPIO.BOARD)
         else:
             raise Exception(
-                "pinNumberingMode value must be set to 'BCM' or 'BOARD'")
+                "gpioPinNumberingMode value must be set to 'BCM' or 'BOARD'")
 
         # Dedicated IO pins are those GPIO pins that a dedicated to
         # another purpose (eg shift register control pin). They should not
@@ -44,6 +45,10 @@ class IoManager:
         # Initialise outputs
         if "outputs" in io_conf:
             self.__init_outputs(io_conf["outputs"])
+
+        # Initialise virtual points
+        if "virtual" in io_conf:
+            self.__init_virtuals(io_conf["virtual"])
 
         # Initialise shift registers
         if "shiftRegisters" in io_conf:
@@ -185,10 +190,11 @@ class IoManager:
 
             # Get property values
             key = config.get_str("key", False, None)
+            name = config.get_str("name", True, None)
+            description = config.get_str("description", True, None)
             device_type = config.get_str("deviceType", True, "GPIO")
             pud = config.get_str("pud", True, "PUD_OFF")
             pin = config.get_int("pin", False, None, 0, 100)
-            name = config.get_str("name", True, None)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
 
@@ -207,7 +213,7 @@ class IoManager:
                 raise Exception("Input invalid 'pud' property value")
 
             # Create the definition
-            inp = Input(self, key, name, device_type,
+            inp = Input(self, key, name, description, device_type,
                         pin, pud, topic, interval)
 
             # Add to input dictionary
@@ -227,9 +233,10 @@ class IoManager:
 
             # Get property values from config
             key = config.get_str("key", False, None)
+            name = config.get_str("name", True, None)
+            description = config.get_str("description", True, None)
             device_type = config.get_str("deviceType", True, "GPIO")
             pin = config.get_int("pin", False, None, 0, 100)
-            name = config.get_str("name", True, None)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
             shift_register_key = config.get_str("shiftRegisterKey", True, None)
@@ -249,7 +256,7 @@ class IoManager:
                         f"shiftRegisterkey property must be defined for output with key '{key}'")
 
             # Create the definition
-            out = Output(self, key, name, device_type, pin, topic,
+            out = Output(self, key, name, description, device_type, pin, topic,
                          interval, shift_register_key)
 
             # Add to output dictionary
@@ -258,6 +265,31 @@ class IoManager:
             # If a GPIO pin then configure hardware
             if device_type == "GPIO":
                 GPIO.setup(out.pin, GPIO.OUT)
+
+    def __init_virtuals(self, virtuals):
+        # Create virtuals definition dictionary
+        self.virtuals = {}
+
+        # Iterate virtual configurations
+        for virtual_config in virtuals:
+            config = DictionaryHelper(virtual_config, "virtual")
+
+            # Get property values from config
+            key = config.get_str("key", False, None)
+            name = config.get_str("name", True, None)
+            description = config.get_str("description", True, None)
+            topic = config.get_str("topic", True, None)
+            interval = config.get_int("interval", True, 3, 1, None)
+
+            # Can't add same key twice
+            if key in self.virtuals:
+                raise Exception("Virtual with key '{key}' already defined")
+
+            # Create the definition
+            virt = Virtual(self, key, name, description, topic, interval)
+
+            # Add to output dictionary
+            self.virtuals[key] = virt
 
     def __init_shift_registers(self, shift_registers):
         # Create shift register instance dictionary

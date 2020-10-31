@@ -1,12 +1,13 @@
-class Input:
-    def __init__(self, io_manager, key, name, device_type, pin, pud, topic, interval):
-        self.key = key
-        self.name = name
+from points.point import IoPoint
+
+class Input(IoPoint):
+    def __init__(self, io_manager, key, name, description, device_type, pin, pud, topic, interval):
+        super(self.__class__, self).__init__(key, name, description, topic, interval)
+
+
         self.device_type = device_type
         self.pin = pin
         self.pud = pud
-        self.topic = topic
-        self.interval = interval
         self._io_manager = io_manager
         
         # Start countdown at interval

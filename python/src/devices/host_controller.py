@@ -4,7 +4,7 @@ from host.command import Command
 from devices.one_wire import OneWire
 
 
-class MonitorItem:
+class Monitor:
     def __init__(self, config):
         self.name = None
         if "name" in config:
@@ -120,9 +120,9 @@ class MonitorItem:
             mqtt.publish(topic, temp)
 
 
-class Monitor:
+class HostController:
     def __init__(self, config, mqtt, topic_host_name):
-        if not "mqtt" in config or not "monitors" in config["mqtt"] or mqtt == None:
+        if not "io" in config or not "monitors" in config["io"] or mqtt == None:
             # Nothing to monitor and publish
             return
 
@@ -133,8 +133,8 @@ class Monitor:
         self._topic_host_name = topic_host_name
 
         # Create the monitor items from the monitor config
-        self._monitors = [MonitorItem(c)
-                          for c in config["mqtt"]["monitors"]]
+        self._monitors = [Monitor(c)
+                          for c in config["io"]["monitors"]]
 
     def tick(self):
         for item in self._monitors:

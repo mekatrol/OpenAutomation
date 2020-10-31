@@ -1,11 +1,11 @@
-class Output:
-    def __init__(self, io_manager, key, name, device_type, pin, topic, interval, shift_register_key):
-        self.key = key
-        self.name = name
+from points.point import IoPoint
+
+class Output(IoPoint):
+    def __init__(self, io_manager, key, name, description, device_type, pin, topic, interval, shift_register_key):
+        super(self.__class__, self).__init__(key, name, description, topic, interval)
+
         self.device_type = device_type
         self.pin = pin
-        self.topic = topic
-        self.interval = interval
         self.shift_register_key = shift_register_key
         self._io_manager = io_manager
 
