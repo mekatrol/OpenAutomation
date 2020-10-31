@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+from helpers.dictionary_helper import DictionaryHelper
 from controllers.shift_register import ShiftRegister
 
 
@@ -14,7 +15,8 @@ class IoManager:
         # Get GPIO pin numbering mode
         if not "pinNumberingMode" in io_conf:
             # Need pin numbering mode to be able to use IO
-            raise Exception("The pin numbering mode has not been defined (using the 'pinNumberingMode' property (valid values: 'BCM', 'BOARD')")
+            raise Exception(
+                "The pin numbering mode has not been defined (using the 'pinNumberingMode' property (valid values: 'BCM', 'BOARD')")
         pin_numbering_mode = io_conf["pinNumberingMode"]
 
         # Set GPIO pin numbering mode
@@ -23,9 +25,10 @@ class IoManager:
         elif pin_numbering_mode == "BOARD":
             GPIO.setmode(GPIO.BOARD)
         else:
-            raise Exception("pinNumberingMode value must be set to 'BCM' or 'BOARD'")
+            raise Exception(
+                "pinNumberingMode value must be set to 'BCM' or 'BOARD'")
 
-        # Dedicated IO pins are those GPIO pins that a dedicated to 
+        # Dedicated IO pins are those GPIO pins that a dedicated to
         # another purpose (eg shift register control pin). They should not
         # be controllable as a general IO pin
         self.dedicated_inputs = {}
@@ -61,12 +64,12 @@ class IoManager:
 
         # If the output is a GPIO type then set output value using
         # GPIO library
-        if out["type"] == "GPIO":
+        if out["device_type"] == "GPIO":
             GPIO.output(out["pin"], value)
 
         # If the output is a shift register output for a shift register then
         # update shift register output value
-        elif out["type"] == "SR":
+        elif out["device_type"] == "SR":
             # Get the referenced shift register
             shift_register_def = self._shift_register_defs[out["shift_register_key"]]
 
@@ -74,14 +77,14 @@ class IoManager:
             outputs_per_device = shift_register_def["outputs_per_device"]
 
             # Get the shift register pin number, this is the output number
-            # from 1 to n where n is the max number of outputs for the 
+            # from 1 to n where n is the max number of outputs for the
             # total number of devices.
             # For example, if there are two 74HC595 devices chained then
             # the total number of outputs will be 16 (2 devices x 8 outputs each device)
             shift_register_pin = out["pin"]
 
             # Get the device output number for the pin. Given 8 pins
-            # per device then the device number is simply: floor('pin number' / 8). 
+            # per device then the device number is simply: floor('pin number' / 8).
             # NOTE: python int function 'floors' the number automatically
             device = int(shift_register_pin / outputs_per_device)
 
@@ -100,10 +103,10 @@ class IoManager:
 
             # If the value of the output is 1 (on) then we OR the shifted bit
             # with the device output value, else we AND the complement shifted bit value
-            # For example, for pin 1 we would: 
+            # For example, for pin 1 we would:
             #   for an 'on':  device_output_value |= 0b00000001
             #   for an 'off': device_output_value &= 0b11111110
-            # For example, for pin 2 we would: 
+            # For example, for pin 2 we would:
             #   for an 'on':  device_output_value |= 0b00000010
             #   for an 'off': device_output_value &= 0b11111101
             if value == 1:
@@ -140,64 +143,35 @@ class IoManager:
 
         # Iterate input configurations
         for input_config in inputs:
-            if not "key" in input_config:
-                raise Exception(
-                    "'key' property must be defined for all inputs")
+            config = DictionaryHelper(input_config, "input")
 
-            if not "pin" in input_config:
-                raise Exception(
-                    "'pin' property must be defined for all inputs")
-
-            if not "pud" in input_config:
-                raise Exception(
-                    "'pud' property must be defined for all inputs")
-
-            # Get property default values
-            key = input_config["key"]
-            pin = input_config["pin"]
-            pud = GPIO.PUD_OFF
-            name = None
-            topic = None
-            interval = 1
-
-            # If optional name defined then get value
-            if "name" in input_config:
-                name = input_config["name"]
-
-            # If optional topic defined then get value
-            if "topic" in input_config:
-                topic = input_config["topic"]
-
-            # If optional interval defined then get value
-            if "interval" in input_config:
-                interval = input_config["interval"]
-
-            # Convert pull_up_down definition
-            if input_config["pud"] == "PUD_UP":
-                pud = GPIO.PUD_UP
-
-            elif input_config["pud"] == "PUD_DOWN":
-                pud = GPIO.PUD_DOWN
-
-            elif input_config["pud"] != "PUD_OFF":
-                raise Exception("Input invalid 'pud' property value")
-
-            # Key must be a valid string and must not be empty
-            if not key or type(key) != str:
-                raise Exception(
-                    "Input 'key' property must be a valid string value")
-
-            # Pin must be an integer and >= zero
-            if not pin or pin < 0 or not isinstance(pin, int):
-                raise Exception(
-                    "Input 'pin' property must be a valid integer value >= 0")
+            # Get property values
+            key = config.get_str("key", False, None)
+            device_type = config.get_str("deviceType", True, "GPIO")
+            pud = config.get_str("pud", True, "PUD_OFF")
+            pin = config.get_int("pin", False, None, 0, 100)
+            name = config.get_str("name", True, None)
+            topic = config.get_str("topic", True, None)
+            interval = config.get_int("interval", True, 3, 1, None)
 
             # Can't add same key twice
             if key in self.inputs:
                 raise Exception("Input with key '{key}' already defined")
 
+            # Convert pull_up_down definition
+            if pud == "PUD_UP":
+                pud = GPIO.PUD_UP
+
+            elif pud == "PUD_DOWN":
+                pud = GPIO.PUD_DOWN
+
+            elif pud != "PUD_OFF":
+                raise Exception("Input invalid 'pud' property value")
+
+            # Create the definition
             inp = {
                 "key": key,
+                "device_type": device_type,
                 "name": name,
                 "pin": pin,
                 "pud": pud,
@@ -205,9 +179,12 @@ class IoManager:
                 "interval": interval
             }
 
+            # Add to input dictionary
             self.inputs[key] = inp
 
-            GPIO.setup(inp["pin"], GPIO.IN, pull_up_down=pud)
+            # If a GPIO pin then configure hardware
+            if device_type == "GPIO":
+                GPIO.setup(inp["pin"], GPIO.IN, pull_up_down=pud)
 
     def __init_outputs(self, outputs):
         # Create output definition dictionary
@@ -215,77 +192,47 @@ class IoManager:
 
         # Iterate output configurations
         for output_config in outputs:
-            if not "key" in output_config:
-                raise Exception(
-                    "'key' property must be defined for all outputs")
+            config = DictionaryHelper(output_config, "input")
 
-            if not "pin" in output_config:
-                raise Exception(
-                    "'pin' property must be defined for all outputs")
-
-            if not "type" in output_config:
-                raise Exception(
-                    "'type' property must be defined for all outputs")
-
-            # Get property default values
-            key = output_config["key"]
-            pin_type = output_config["type"]
-            pin = output_config["pin"]
-            name = None
-            topic = None
-            interval = 1
-            shift_register_key = None
-
-            # Validate type
-            if pin_type != "GPIO" and pin_type != "SR":
-                raise Exception("Output invalid 'type' property value")
-
-            # If optional name defined then get value
-            if "name" in output_config:
-                name = output_config["name"]
-
-            # If optional topic defined then get value
-            if "topic" in output_config:
-                topic = output_config["topic"]
-
-            # If optional interval defined then get value
-            if "interval" in output_config:
-                interval = output_config["interval"]
-
-            # If optional shift register key defined then get value
-            if pin_type == "SR":
-                if not "shiftRegisterKey" in output_config:
-                    raise Exception(
-                        f"shiftRegisterkey property must be defined for output with key '{key}'")
-                shift_register_key = output_config["shiftRegisterKey"]
-
-            # Key must be a valid string and must not be empty
-            if not key or type(key) != str:
-                raise Exception(
-                    "Output 'key' property must be a valid string value")
-
-            # Pin must be an integer and >= zero
-            if not pin or pin < 0 or not isinstance(pin, int):
-                raise Exception(
-                    "Output 'pin' property must be a valid integer value >= 0")
+            # Get property values from config
+            key = config.get_str("key", False, None)
+            device_type = config.get_str("deviceType", True, "GPIO")
+            pin = config.get_int("pin", False, None, 0, 100)
+            name = config.get_str("name", True, None)
+            topic = config.get_str("topic", True, None)
+            interval = config.get_int("interval", True, 3, 1, None)
+            shift_register_key = config.get_str("shiftRegisterKey", True, None)
 
             # Can't add same key twice
             if key in self.outputs:
                 raise Exception("Output with key '{key}' already defined")
 
+            # Validate type
+            if device_type != "GPIO" and device_type != "SR":
+                raise Exception("Output invalid 'type' property value")
+
+            # If shift register output them make sure shift register key defined
+            if device_type == "SR":
+                if shift_register_key == None:
+                    raise Exception(
+                        f"shiftRegisterkey property must be defined for output with key '{key}'")
+
+            # Create the definition
             out = {
                 "key": key,
                 "name": name,
-                "type": pin_type,
+                "device_type": device_type,
                 "pin": pin,
                 "topic": topic,
                 "interval": interval,
                 "shift_register_key": shift_register_key
             }
 
+            # Add to output dictionary
             self.outputs[key] = out
 
-            if out["type"] == "GPIO":
+            # If a GPIO pin then configure hardware
+            if device_type == "GPIO":
                 GPIO.setup(out["pin"], GPIO.OUT)
 
     def __init_shift_registers(self, shift_registers):
@@ -297,75 +244,23 @@ class IoManager:
 
         # Iterate shift register configurations
         for shift_register_config in shift_registers:
-            if not "key" in shift_register_config:
-                raise Exception(
-                    "'key' property must be defined for all shift registers")
+            config = DictionaryHelper(shift_register_config, "input")
 
-            if not "data" in shift_register_config:
-                raise Exception(
-                    "'data' property must be defined for all shift registers")
-
-            if not "clock" in shift_register_config:
-                raise Exception(
-                    "'clock' property must be defined for all shift registers")
-
-            if not "latch" in shift_register_config:
-                raise Exception(
-                    "'latch' property must be defined for all shift registers")
-
-            if not "devices" in shift_register_config:
-                raise Exception(
-                    "'devices' property must be defined for all shift registers")
-
-            oe = None
-            clear = None
-
-            key = shift_register_config["key"]
-            devices = shift_register_config["devices"]
-            outputs_per_device = 8 # Default to 8 output pins per device 
-            data = shift_register_config["data"]
-            clock = shift_register_config["clock"]
-            latch = shift_register_config["latch"]
-
-            if not data in self.outputs:
-                raise Exception(
-                    f"Data output name '{data}' not a valid output name")
-
-            if not clock in self.outputs:
-                raise Exception(
-                    f"Clock output name '{clock}' not a valid output name")
-
-            if not latch in self.outputs:
-                raise Exception(
-                    f"Latch output name '{latch}' not a valid output name")
-
-            if "oe" in shift_register_config:
-                oe = shift_register_config["oe"]
-                if oe != None and not oe in self.outputs:
-                    raise Exception(
-                        f"Output enable output name '{oe}' not a valid output name")
-
-            if "clear" in shift_register_config:
-                clear = shift_register_config["clear"]
-                if clear != None and not clear in self.outputs:
-                    raise Exception(
-                        f"Clear output name '{clear}' not a valid output name")
-
-            # If optional outputs per device defined then get value
-            if "outputsPerDevice" in shift_register_config:
-                outputs_per_device = shift_register_config["outputsPerDevice"]
-
-            # If optional name defined then get value
-            if "name" in shift_register_config:
-                name = shift_register_config["name"]
+            # Get property values from config
+            key = config.get_str("key", False, None)
+            name = config.get_str("name", True, None)
+            shift_register_key = config.get_str("shiftRegisterKey", True, None)
+            devices = config.get_int("devices", False, 1)
+            outputs_per_device = config.get_int("outputsPerDevice", True, min_value = 8)
+            data = config.get_str("data", False)
+            clock = config.get_str("clock", False)
+            latch = config.get_str("latch", False)
+            oe = config.get_str("oe", True)
+            clear = config.get_str("clear", True)
+            interval = config.get_int("interval", True, default = 3, min_value = 1)
 
             # Create array to hold 8 bit values for each device
-            output_values =[0] * devices
-
-            # Can't add same key twice
-            if key in self._shift_register_defs:
-                raise Exception(
-                    "Shift register with key '{key}' already defined")
+            output_values = [0] * devices
 
             # Add shift register pin keys to dedicated pin set
             self.dedicated_outputs[data] = True
@@ -375,7 +270,7 @@ class IoManager:
 
             if oe:
                 self.dedicated_outputs[oe] = True
-            
+
             if clear:
                 self.dedicated_outputs[clear] = True
 
@@ -383,7 +278,7 @@ class IoManager:
                 "key": key,
                 "name": name,
                 "devices": devices,
-                "outputs_per_device": outputs_per_device
+                "outputs_per_device": outputs_per_device,
                 "data": data,
                 "clock": clock,
                 "latch": latch,
