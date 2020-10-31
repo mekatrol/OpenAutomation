@@ -53,7 +53,6 @@ class IoManager:
         self._topic_host_name = topic_host_name
         self._output_controller = OutputController(self, mqtt, topic_host_name)
 
-
     def input(self, key):
         # To read an input then the input config must exist
         if not key in self.inputs:
@@ -79,10 +78,10 @@ class IoManager:
         # update shift register output value
         elif out.device_type == "SR":
             # Get the referenced shift register
-            shift_register_def = self._shift_register_defs[out.shift_register_key]
+            shift_register = self._shift_registers[out.shift_register_key]
 
             # Get the number of output bits per device
-            outputs_per_device = shift_register_def["outputs_per_device"]
+            outputs_per_device = shift_register.outputs_per_device
 
             # Get the shift register pin number, this is the output number
             # from 1 to n where n is the max number of outputs for the
@@ -118,9 +117,9 @@ class IoManager:
             #   for an 'on':  device_output_value |= 0b00000010
             #   for an 'off': device_output_value &= 0b11111101
             if value == 1:
-                shift_register_def["output_values"][device] |= pin_shifted_value
+                shift_register.output_values[device] |= pin_shifted_value
             else:
-                shift_register_def["output_values"][device] &= ~pin_shifted_value
+                shift_register.output_values[device] &= ~pin_shifted_value
 
         # Not a valid type?
         else:
@@ -143,21 +142,17 @@ class IoManager:
             # Process input
             self.inputs[key].tick(self._mqtt, self._topic_host_name)
 
-
     def _process_outputs(self):
         self._output_controller.tick()
 
     def _shift_values(self):
         # For each shift register, update its ouput (shift its values)
-        for key in self._shift_register_defs:
-            # Get the shift register definition
-            shift_register_def = self._shift_register_defs[key]
-
+        for key in self._shift_registers:
             # Get the shift register instance
             shift_register = self._shift_registers[key]
 
             # Get the output values for the shift register
-            outputs = bytes(shift_register_def["output_values"])
+            outputs = bytes(shift_register.output_values)
 
             # Shift values to output shift register
             shift_register.clear_latch()
@@ -249,9 +244,6 @@ class IoManager:
                 GPIO.setup(out.pin, GPIO.OUT)
 
     def __init_shift_registers(self, shift_registers):
-        # Create shift register definition dictionary
-        self._shift_register_defs = {}
-
         # Create shift register instance dictionary
         self._shift_registers = {}
 
@@ -273,9 +265,6 @@ class IoManager:
             clear = config.get_str("clear", True)
             interval = config.get_int("interval", True, default=3, min_value=1)
 
-            # Create array to hold 8 bit values for each device
-            output_values = [0] * devices
-
             # Add shift register pin keys to dedicated pin set
             self.dedicated_outputs[data] = True
             self.dedicated_outputs[clock] = True
@@ -288,22 +277,8 @@ class IoManager:
             if clear:
                 self.dedicated_outputs[clear] = True
 
-            shift_register_def = {
-                "key": key,
-                "name": name,
-                "devices": devices,
-                "outputs_per_device": outputs_per_device,
-                "data": data,
-                "clock": clock,
-                "latch": latch,
-                "oe": oe,
-                "clear": clear,
-                "output_values": output_values
-            }
-
-            # Add definition
-            self._shift_register_defs[key] = shift_register_def
-
             # Create and add shift register
-            shift_register = ShiftRegister(self, shift_register_def)
+            shift_register = ShiftRegister(
+                self, key, name, devices, outputs_per_device, data, clock, latch, oe, clear)
+            
             self._shift_registers[key] = shift_register

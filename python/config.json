@@ -54,6 +54,62 @@
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
                 "pin": 1
+            },
+            {
+                "key": "sr1_out2",
+                "name": "BBQ Area Lawn",
+                "deviceType": "SR",
+                "shiftRegisterKey": "sr1",
+                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
+                "pin": 2
+            },
+            {
+                "key": "sr1_out3",
+                "name": "BBQ Area Lawn",
+                "deviceType": "SR",
+                "shiftRegisterKey": "sr1",
+                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
+                "pin": 3
+            },
+            {
+                "key": "sr1_out4",
+                "name": "BBQ Area Lawn",
+                "deviceType": "SR",
+                "shiftRegisterKey": "sr1",
+                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
+                "pin": 4
+            },
+            {
+                "key": "sr1_out5",
+                "name": "BBQ Area Lawn",
+                "deviceType": "SR",
+                "shiftRegisterKey": "sr1",
+                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
+                "pin": 5
+            },
+            {
+                "key": "sr1_out6",
+                "name": "BBQ Area Lawn",
+                "deviceType": "SR",
+                "shiftRegisterKey": "sr1",
+                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
+                "pin": 6
+            },
+            {
+                "key": "sr1_out7",
+                "name": "BBQ Area Lawn",
+                "deviceType": "SR",
+                "shiftRegisterKey": "sr1",
+                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
+                "pin": 7
+            },
+            {
+                "key": "sr1_out8",
+                "name": "BBQ Area Lawn",
+                "deviceType": "SR",
+                "shiftRegisterKey": "sr1",
+                "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
+                "pin": 8
             }
         ],
         "shiftRegisters": [
