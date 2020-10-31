@@ -61,13 +61,27 @@ class IoManager:
         # Use GPIO to return value based in input config
         return GPIO.input(self.inputs[key].pin)
 
+    def toggle_output(self, key):
+        # To write an ouput then the output config must exist
+        if not key in self.outputs:
+            raise Exception(f"Invalid output key '{key}'")
+
+        # Get the output
+        out = self.outputs[key]
+
+        if out.value == 1:
+            out.value = 0
+        else:
+            out.value = 1
+
     def output(self, key, value):
         # To write an ouput then the output config must exist
         if not key in self.outputs:
             raise Exception(f"Invalid output key '{key}'")
 
-        # Get the output config
+        # Get the output
         out = self.outputs[key]
+        out.set_value(value)
 
         # If the output is a GPIO type then set output value using
         # GPIO library
@@ -88,7 +102,9 @@ class IoManager:
             # total number of devices.
             # For example, if there are two 74HC595 devices chained then
             # the total number of outputs will be 16 (2 devices x 8 outputs each device)
-            shift_register_pin = out.pin
+            # Subtract 1 so that shift and modulo work
+            # (ie pin 1 will shift zero bits, and pin 8 will shift 7 bits and will still be on device 1)
+            shift_register_pin = (out.pin - 1)
 
             # Get the device output number for the pin. Given 8 pins
             # per device then the device number is simply: floor('pin number' / 8).
@@ -106,16 +122,16 @@ class IoManager:
             # For example:
             #   pin 1 has the shifted binary value 0b0000001
             #   pin 8 has the shifted binary value 0b1000000
-            pin_shifted_value = 1 << (device_pin - 1)
+            pin_shifted_value = 1 << device_pin
 
             # If the value of the output is 1 (on) then we OR the shifted bit
             # with the device output value, else we AND the complement shifted bit value
             # For example, for pin 1 we would:
-            #   for an 'on':  device_output_value |= 0b00000001
-            #   for an 'off': device_output_value &= 0b11111110
+            #   for a '1':  device_output_value |= 0b00000001
+            #   for a '0': device_output_value &= 0b11111110
             # For example, for pin 2 we would:
-            #   for an 'on':  device_output_value |= 0b00000010
-            #   for an 'off': device_output_value &= 0b11111101
+            #   for a '1':  device_output_value |= 0b00000010
+            #   for a '0': device_output_value &= 0b11111101
             if value == 1:
                 shift_register.output_values[device] |= pin_shifted_value
             else:
@@ -280,5 +296,5 @@ class IoManager:
             # Create and add shift register
             shift_register = ShiftRegister(
                 self, key, name, devices, outputs_per_device, data, clock, latch, oe, clear)
-            
+
             self._shift_registers[key] = shift_register

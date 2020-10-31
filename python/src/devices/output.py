@@ -9,7 +9,7 @@ class Output:
         self.shift_register_key = shift_register_key
         self._io_manager = io_manager
 
-        self.value = "off"
+        self.value = 0
         self._count_down = self.interval
 
     def tick(self, topic_host_name):
@@ -26,18 +26,22 @@ class Output:
             # Reset countdown from interval
             self._count_down = self.interval
 
-        value = 0
-        if self.value == b"on":
-            value = 1
-
         # Use IO manager to set ouput (GPIO or SR)
-        self._io_manager.output(self.key, value)
+        self._io_manager.output(self.key, self.value)
 
         return self.build_topic("state", topic_host_name)
 
-    def mqtt_callback(self, value, topic_host_name):
+    def set_value(self, value):
+        # Convert byte string values sent from MQTT to int bit values
+        if value == b'1':
+            value = 1
+        elif value == b'0':
+            value = 0
+
         self.value = value
 
+    def mqtt_callback(self, value, topic_host_name):
+        self.set_value(value)
         return self.build_topic("state", topic_host_name)
 
     def build_topic(self, action, topic_host_name):

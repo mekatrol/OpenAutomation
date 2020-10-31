@@ -57,16 +57,31 @@ def main():
     # device_file_name = device_folder + '/w1_slave'
 
     try:
-        x = 0
+        mister_sw_last_tick = 0
+        light_sw_last_tick = 0
+        i = 0
         while True:
+            i += 1
+            print(i)
+
             # Process MQTT loop
-            mqtt.loop(100)
+            mqtt.loop(10)
 
             # Process host monitor tick
             host_monitor.tick()
 
             # Process IO
             io_manager.tick(mqtt)
+
+            mister_sw = io_manager.input("mister_switch")
+            if mister_sw and mister_sw != mister_sw_last_tick:
+                io_manager.toggle_output("sr1_out1")
+            mister_sw_last_tick = mister_sw            
+
+            light_sw = io_manager.input("light_switch")
+            if light_sw and light_sw != light_sw_last_tick:
+                io_manager.toggle_output("sr1_out2")
+            light_sw_last_tick = light_sw            
 
             # Sleep a bit
             time.sleep(loopSleepTime)
