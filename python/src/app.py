@@ -9,8 +9,6 @@ import RPi.GPIO as GPIO
 from host.monitor import Monitor
 from communication.mqtt import Mqtt
 from controllers.io_manager import IoManager
-from devices.output_controller import OutputController
-from devices.input_controller import InputController
 
 CONFIG_FILE_NAME = "config.json"
 
@@ -50,9 +48,7 @@ def main():
 
     host_monitor = Monitor(config, mqtt, topic_host_name)
 
-    io_manager = IoManager(config)
-    input_controller = InputController(io_manager, mqtt, topic_host_name)
-    output_controller = OutputController(io_manager, mqtt, topic_host_name)
+    io_manager = IoManager(config, mqtt, topic_host_name)
 
     # Create temp sensor
     # base_dir = '/sys/bus/w1/devices/'
@@ -69,14 +65,8 @@ def main():
             # Process host monitor tick
             host_monitor.tick()
 
-            # Process input controller tick
-            input_controller.tick()
-
-            # Process output controller tick
-            output_controller.tick()
-
-            # Process shift register shifting
-            io_manager.shift_values()
+            # Process IO
+            io_manager.tick(mqtt)
 
             # Sleep a bit
             time.sleep(loopSleepTime)

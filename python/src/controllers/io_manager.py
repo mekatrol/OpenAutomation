@@ -1,10 +1,13 @@
 import RPi.GPIO as GPIO
 from helpers.dictionary_helper import DictionaryHelper
 from controllers.shift_register import ShiftRegister
+from devices.output_controller import OutputController
+from devices.input import Input
+from devices.output import Output
 
 
 class IoManager:
-    def __init__(self, config):
+    def __init__(self, config, mqtt, topic_host_name):
         # If no IO section then don't process further
         if not "io" in config:
             return
@@ -46,13 +49,18 @@ class IoManager:
         if "shiftRegisters" in io_conf:
             self.__init_shift_registers(io_conf["shiftRegisters"])
 
+        self._mqtt = mqtt
+        self._topic_host_name = topic_host_name
+        self._output_controller = OutputController(self, mqtt, topic_host_name)
+
+
     def input(self, key):
         # To read an input then the input config must exist
         if not key in self.inputs:
             raise Exception(f"Invalid input key '{key}'")
 
         # Use GPIO to return value based in input config
-        return GPIO.input(self.inputs[key]["pin"])
+        return GPIO.input(self.inputs[key].pin)
 
     def output(self, key, value):
         # To write an ouput then the output config must exist
@@ -64,14 +72,14 @@ class IoManager:
 
         # If the output is a GPIO type then set output value using
         # GPIO library
-        if out["device_type"] == "GPIO":
-            GPIO.output(out["pin"], value)
+        if out.device_type == "GPIO":
+            GPIO.output(out.pin, value)
 
         # If the output is a shift register output for a shift register then
         # update shift register output value
-        elif out["device_type"] == "SR":
+        elif out.device_type == "SR":
             # Get the referenced shift register
-            shift_register_def = self._shift_register_defs[out["shift_register_key"]]
+            shift_register_def = self._shift_register_defs[out.shift_register_key]
 
             # Get the number of output bits per device
             outputs_per_device = shift_register_def["outputs_per_device"]
@@ -81,7 +89,7 @@ class IoManager:
             # total number of devices.
             # For example, if there are two 74HC595 devices chained then
             # the total number of outputs will be 16 (2 devices x 8 outputs each device)
-            shift_register_pin = out["pin"]
+            shift_register_pin = out.pin
 
             # Get the device output number for the pin. Given 8 pins
             # per device then the device number is simply: floor('pin number' / 8).
@@ -116,11 +124,30 @@ class IoManager:
 
         # Not a valid type?
         else:
-            out_type = out["type"]
+            out_type = out.device_type
             raise Exception(
                 f"Invalid output type '{out_type}' for output with key '{key}'")
 
-    def shift_values(self):
+    def tick(self, mqtt):
+
+        self._process_inputs()
+        self._process_outputs()
+        self._shift_values()
+
+    def _process_inputs(self):
+        for key in self.inputs:
+            # Do not call tick on pins dedicated to other functions (eg pins that are dedicated to SPI device)
+            if key in self.dedicated_inputs:
+                continue
+
+            # Process input
+            self.inputs[key].tick(self._mqtt, self._topic_host_name)
+
+
+    def _process_outputs(self):
+        self._output_controller.tick()
+
+    def _shift_values(self):
         # For each shift register, update its ouput (shift its values)
         for key in self._shift_register_defs:
             # Get the shift register definition
@@ -169,22 +196,15 @@ class IoManager:
                 raise Exception("Input invalid 'pud' property value")
 
             # Create the definition
-            inp = {
-                "key": key,
-                "device_type": device_type,
-                "name": name,
-                "pin": pin,
-                "pud": pud,
-                "topic": topic,
-                "interval": interval
-            }
+            inp = Input(self, key, name, device_type,
+                        pin, pud, topic, interval)
 
             # Add to input dictionary
             self.inputs[key] = inp
 
             # If a GPIO pin then configure hardware
             if device_type == "GPIO":
-                GPIO.setup(inp["pin"], GPIO.IN, pull_up_down=pud)
+                GPIO.setup(inp.pin, GPIO.IN, pull_up_down=pud)
 
     def __init_outputs(self, outputs):
         # Create output definition dictionary
@@ -218,22 +238,15 @@ class IoManager:
                         f"shiftRegisterkey property must be defined for output with key '{key}'")
 
             # Create the definition
-            out = {
-                "key": key,
-                "name": name,
-                "device_type": device_type,
-                "pin": pin,
-                "topic": topic,
-                "interval": interval,
-                "shift_register_key": shift_register_key
-            }
+            out = Output(self, key, name, device_type, pin, topic,
+                         interval, shift_register_key)
 
             # Add to output dictionary
             self.outputs[key] = out
 
             # If a GPIO pin then configure hardware
             if device_type == "GPIO":
-                GPIO.setup(out["pin"], GPIO.OUT)
+                GPIO.setup(out.pin, GPIO.OUT)
 
     def __init_shift_registers(self, shift_registers):
         # Create shift register definition dictionary
@@ -251,13 +264,14 @@ class IoManager:
             name = config.get_str("name", True, None)
             shift_register_key = config.get_str("shiftRegisterKey", True, None)
             devices = config.get_int("devices", False, 1)
-            outputs_per_device = config.get_int("outputsPerDevice", True, min_value = 8)
+            outputs_per_device = config.get_int(
+                "outputsPerDevice", True, min_value=8)
             data = config.get_str("data", False)
             clock = config.get_str("clock", False)
             latch = config.get_str("latch", False)
             oe = config.get_str("oe", True)
             clear = config.get_str("clear", True)
-            interval = config.get_int("interval", True, default = 3, min_value = 1)
+            interval = config.get_int("interval", True, default=3, min_value=1)
 
             # Create array to hold 8 bit values for each device
             output_values = [0] * devices

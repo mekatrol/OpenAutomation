@@ -11,8 +11,12 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):
     if msg.topic in userdata.subscribe_callbacks:
-        callback = userdata.subscribe_callbacks[msg.topic]
-        callback(msg.payload)
+        callback_data = userdata.subscribe_callbacks[msg.topic]
+
+        callback = callback_data["callback"]
+        data = callback_data["data"]
+
+        callback(msg.payload, data)
 
 
 class Mqtt:
@@ -68,10 +72,13 @@ class Mqtt:
     def publish(self, topic, value):
         self.client.publish(topic, value)
 
-    def subscribe(self, topic, callback):
+    def subscribe(self, topic, callback, data):
         if topic != None and callback != None:
             self.client.subscribe(topic)
-            self.subscribe_callbacks[topic] = callback
+            self.subscribe_callbacks[topic] = {
+                "callback": callback,
+                "data": data
+            }
 
     def loop(self, timeout):
         self.client.loop(timeout=timeout, max_packets=1)
