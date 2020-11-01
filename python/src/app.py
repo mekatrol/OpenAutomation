@@ -60,9 +60,11 @@ def main():
     script_manager = None    
     scripts_path = app_config.get_str("scriptsPath", True, default=None)
 
-    if scripts_path != None:
+    script_modules = app_config.get_any("scripts", True, default=None)
+
+    if scripts_path != None and script_modules != None:
         script_manager = ScriptManager()
-        script_manager.load_scripts(scripts_path)
+        script_manager.load_scripts(scripts_path, script_modules)
 
     # Create temp sensor
     # base_dir = '/sys/bus/w1/devices/'

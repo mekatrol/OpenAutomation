@@ -1,7 +1,11 @@
 {
     "app": {
         "loopSleepTime": 0.2,
-        "scriptsPath": "/home/pi/scripts"
+        "scriptsPath": "/home/pi/scripts",
+        "scripts": [{
+            "name": "switches.py",
+            "order": 1
+        }]
     },
     "io": {
         "gpioPinNumberingMode": "BCM",

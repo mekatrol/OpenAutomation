@@ -10,10 +10,16 @@ class ScriptHelper:
 
         self.script_path = script_path
 
-    def load_class(self, file_name_with_path, class_name, required_methods=None):
-        # Get file name and module name from full path
-        file_name = os.path.basename(file_name_with_path)
+    def load_class(self, file_name, class_name, required_methods=None):
+        # Get module name from file name
         module_name = os.path.splitext(file_name)[0]
+
+        # Get full path name 
+        full_path = self.script_path + file_name
+
+        # Can't load module if file does not exist
+        if not os.path.isfile(full_path):
+            return None, None
 
         # Build import spec
         spec = importlib.util.spec_from_file_location(
