@@ -1,6 +1,6 @@
 import json
 import re
-from host.command import Command
+from helpers.command_helper import CommandHelper
 from devices.one_wire import OneWire
 
 
@@ -73,7 +73,7 @@ class Monitor:
             return self.__internal_command(params, topic, mqtt)
 
         # Execute command
-        out = Command.execute([self.cmd], params.split())
+        out = CommandHelper.execute([self.cmd], params.split())
 
         # Is there a regular expression to process the output
         if self.regex != None:
@@ -100,7 +100,7 @@ class Monitor:
             if len(param_parts) > 1:
                 path = param_parts[1]
 
-            total, used, free = Command.disk_usage(path)
+            total, used, free = CommandHelper.disk_usage(path)
 
             payload = {
                 "path": path,

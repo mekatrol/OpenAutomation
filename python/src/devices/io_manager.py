@@ -1,6 +1,6 @@
 import RPi.GPIO as GPIO
 from helpers.dictionary_helper import DictionaryHelper
-from controllers.shift_register import ShiftRegister
+from devices.shift_register import ShiftRegister
 from devices.output_controller import OutputController
 from points.input import Input
 from points.output import Output
@@ -151,6 +151,7 @@ class IoManager:
     def tick(self, mqtt):
 
         self._process_inputs()
+        self._process_virtuals()
         self._process_outputs()
         self._shift_values()
 
@@ -160,11 +161,30 @@ class IoManager:
             if key in self.dedicated_inputs:
                 continue
 
+            # Get input
+            inp = self.inputs[key]
+
             # Process input
-            self.inputs[key].tick(self._mqtt, self._topic_host_name)
+            topic = inp.tick(self._topic_host_name)
+
+            # If topic returned, then publish topic
+            if topic != None:
+                self._mqtt.publish(topic, inp.value)
 
     def _process_outputs(self):
         self._output_controller.tick()
+
+    def _process_virtuals(self):
+        for key in self.virtuals:
+            # Get virtual
+            virt = self.virtuals[key]
+
+            # Process virtual
+            topic = virt.tick(self._topic_host_name)
+
+            # If topic returned, then publish topic
+            if topic != None:
+                self._mqtt.publish(topic, virt.value)
 
     def _shift_values(self):
         # For each shift register, update its ouput (shift its values)
@@ -280,13 +300,15 @@ class IoManager:
             description = config.get_str("description", True, None)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
+            value = config.get_any("value", True, 0.0)
 
             # Can't add same key twice
             if key in self.virtuals:
                 raise Exception("Virtual with key '{key}' already defined")
 
             # Create the definition
-            virt = Virtual(self, key, name, description, topic, interval)
+            virt = Virtual(self, key, name, description,
+                           value, topic, interval)
 
             # Add to output dictionary
             self.virtuals[key] = virt

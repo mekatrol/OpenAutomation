@@ -3,7 +3,19 @@ class DictionaryHelper:
         self._dict = instance
         self._name = name
 
-    def get_int(self, property_name, optional = True, default = None, min_value = None, max_value = None):
+    def get_any(self, property_name, optional=True, default=None):
+        if not property_name in self._dict:
+
+            # If optional then just return default
+            if optional:
+                return default
+
+            raise Exception(
+                f"'{property_name}' property must be defined for all '{self._name}' value")
+
+        return self._dict[property_name]
+
+    def get_int(self, property_name, optional=True, default=None, min_value=None, max_value=None):
         if not property_name in self._dict:
 
             # If optional then just return default
@@ -38,7 +50,7 @@ class DictionaryHelper:
         # Return validated value
         return property_value
 
-    def get_str(self, property_name, optional = True, default = None):
+    def get_str(self, property_name, optional=True, default=None):
         if not property_name in self._dict:
 
             # If optional then just return default

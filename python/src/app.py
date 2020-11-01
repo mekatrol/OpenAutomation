@@ -8,7 +8,7 @@ import RPi.GPIO as GPIO
 
 from devices.host_controller import HostController
 from communication.mqtt import Mqtt
-from controllers.io_manager import IoManager
+from devices.io_manager import IoManager
 
 CONFIG_FILE_NAME = "config.json"
 
@@ -74,12 +74,12 @@ def main():
             mister_sw = io_manager.input("mister_switch")
             if mister_sw and mister_sw != mister_sw_last_tick:
                 io_manager.toggle_output("sr1_out1")
-            mister_sw_last_tick = mister_sw            
+            mister_sw_last_tick = mister_sw
 
             light_sw = io_manager.input("light_switch")
             if light_sw and light_sw != light_sw_last_tick:
                 io_manager.toggle_output("sr1_out2")
-            light_sw_last_tick = light_sw            
+            light_sw_last_tick = light_sw
 
             # Sleep a bit
             time.sleep(loopSleepTime)

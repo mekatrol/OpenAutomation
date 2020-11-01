@@ -1,8 +1,10 @@
 from points.point import IoPoint
 
+
 class Output(IoPoint):
     def __init__(self, io_manager, key, name, description, device_type, pin, topic, interval, shift_register_key):
-        super(self.__class__, self).__init__(key, name, description, topic, interval)
+        super(self.__class__, self).__init__(
+            key, name, description, 0, topic, interval)
 
         self.device_type = device_type
         self.pin = pin
@@ -10,26 +12,18 @@ class Output(IoPoint):
         self._io_manager = io_manager
 
         self.value = 0
-        self._count_down = self.interval
 
     def tick(self, topic_host_name):
-        # Use interval if defined
-        if self.interval != None:
-
-            # Decrement count down
-            self._count_down -= 1
-
-            # Count down not reached zero (interval incomplete)?
-            if self._count_down > 0:
-                return
-
-            # Reset countdown from interval
-            self._count_down = self.interval
+        # Has any defined interval expired
+        if not super(self.__class__, self).interval_expired():
+            # No, then do no processing this tick
+            return
 
         # Use IO manager to set ouput (GPIO or SR)
         self._io_manager.output(self.key, self.value)
 
-        return self.build_topic("state", topic_host_name)
+        # Return topic (if template defined)
+        return self._build_state_topic(topic_host_name)
 
     def set_value(self, value):
         # Convert byte string values sent from MQTT to int bit values
@@ -41,10 +35,11 @@ class Output(IoPoint):
         self.value = value
 
     def mqtt_callback(self, value, topic_host_name):
+        # Set output value
         self.set_value(value)
-        return self.build_topic("state", topic_host_name)
 
-    def build_topic(self, action, topic_host_name):
-        if self.topic != None:
-            return self.topic.format(
-                key=self.key, action=action, topicHostName=topic_host_name)
+        return self._build_state_topic(topic_host_name)
+
+    def _build_state_topic(self, topic_host_name):
+        # Return topic (if template defined)
+        return super(self.__class__, self).build_topic(topic_host_name, action="state")

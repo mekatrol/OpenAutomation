@@ -2,7 +2,8 @@ import re
 import shutil
 from subprocess import check_output, CalledProcessError
 
-class Command:
+
+class CommandHelper:
     def __init__(self):
         return
 
@@ -23,4 +24,3 @@ class Command:
     def disk_usage(path):
         total, used, free = shutil.disk_usage(path)
         return total, used, free
-        

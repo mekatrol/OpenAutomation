@@ -131,8 +131,10 @@
                 "name": "Light on time (mins)",
                 "description": "The amount of time to turn on the light when the button is pressed",
                 "type": "float",
-                "initValue": 30,
-                "units": "mins"
+                "value": 30,
+                "units": "mins",
+                "interval": 30,
+                "topic": "monitor/control/virtual/{action}/{key}/{topicHostName}"
             }
         ],
         "monitors": [
