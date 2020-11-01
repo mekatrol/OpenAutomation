@@ -3,7 +3,7 @@ from points.point import IoPoint
 
 class Output(IoPoint):
     def __init__(self, io_manager, key, name, description, device_type, pin, topic, interval, shift_register_key):
-        super(self.__class__, self).__init__(
+        super().__init__(
             key, name, description, 0, topic, interval)
 
         self.device_type = device_type
@@ -15,7 +15,7 @@ class Output(IoPoint):
 
     def tick(self, topic_host_name):
         # Has any defined interval expired
-        if not super(self.__class__, self).interval_expired():
+        if not super().interval_expired():
             # No, then do no processing this tick
             return
 
@@ -42,4 +42,4 @@ class Output(IoPoint):
 
     def _build_state_topic(self, topic_host_name):
         # Return topic (if template defined)
-        return super(self.__class__, self).build_topic(topic_host_name, action="state")
+        return super().build_topic(topic_host_name, action="state")

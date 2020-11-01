@@ -1,11 +1,29 @@
 {
     "app": {
         "loopSleepTime": 0.2,
-        "scriptsPath": "/home/pi/scripts",
-        "scripts": [{
-            "name": "switches.py",
-            "order": 1
-        }]
+        "scriptsPath": "/home/pi/OpenAutomation/python/scripts/",
+        "scripts": [
+            {
+                "key": "mister",
+                "name": "switches.py",
+                "order": 1,
+                "interval": 2,
+                "init": {
+                    "input": "mister_switch",
+                    "output": "sr1_out1"
+                }
+            },
+            {
+                "key": "lights",
+                "name": "switches.py",
+                "order": 2,
+                "interval": 2,
+                "init": {
+                    "input": "light_switch",
+                    "output": "sr1_out2"
+                }
+            }
+        ]
     },
     "io": {
         "gpioPinNumberingMode": "BCM",

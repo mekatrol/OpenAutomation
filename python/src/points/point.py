@@ -1,31 +1,15 @@
-class IoPoint:
+from points.interval import Interval
+
+
+class IoPoint(Interval):
     def __init__(self, key, name, description, value, topic, interval):
+        super().__init__(interval)
+
         self.key = key
         self.name = name
         self.description = description
         self.topic = topic
-        self.interval = interval
         self.value = value
-
-        # Init count down to interval
-        self._count_down = self.interval
-
-    def interval_expired(self):
-        # If there is not interval then it has expired
-        if self.interval == None:
-            return True
-
-        # Decrement count down
-        self._count_down -= 1
-
-        # Count down not reached zero (interval incomplete)?
-        if self._count_down > 0:
-            return False
-
-        # Reset countdown from interval
-        self._count_down = self.interval
-
-        return True
 
     def build_topic(self, topic_host_name=None, action=None):
         # Get topic (if any)

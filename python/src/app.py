@@ -63,7 +63,7 @@ def main():
     script_modules = app_config.get_any("scripts", True, default=None)
 
     if scripts_path != None and script_modules != None:
-        script_manager = ScriptManager()
+        script_manager = ScriptManager(io_manager)
         script_manager.load_scripts(scripts_path, script_modules)
 
     # Create temp sensor
@@ -91,16 +91,6 @@ def main():
             # Process scripts
             if script_manager != None:
                 script_manager.tick()
-
-            mister_sw = io_manager.input("mister_switch")
-            if mister_sw and mister_sw != mister_sw_last_tick:
-                io_manager.toggle_output("sr1_out1")
-            mister_sw_last_tick = mister_sw
-
-            light_sw = io_manager.input("light_switch")
-            if light_sw and light_sw != light_sw_last_tick:
-                io_manager.toggle_output("sr1_out2")
-            light_sw_last_tick = light_sw
 
             # Sleep a bit
             time.sleep(loopSleepTime)
