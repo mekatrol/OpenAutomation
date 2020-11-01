@@ -10,7 +10,7 @@ class ScriptHelper:
 
         self.script_path = script_path
 
-    def load_class(self, file_name_with_path, class_name):
+    def load_class(self, file_name_with_path, class_name, required_methods=None):
         # Get file name and module name from full path
         file_name = os.path.basename(file_name_with_path)
         module_name = os.path.splitext(file_name)[0]
@@ -30,22 +30,23 @@ class ScriptHelper:
             # Looking for a class (with matching calss name if specified)
             if inspect.isclass(obj) and (class_name == None or name == class_name):
 
-                # Get methods of the class
-                methods = dict((name, func) for name, func
-                               in inspect.getmembers(obj))
+                if required_methods != None:
 
-                # The init and tick methods are mandatory
-                if not "tick" in methods or not "init" in methods:
-                    continue
+                    # Get methods of the class
+                    methods = dict((name, func) for name, func
+                                   in inspect.getmembers(obj))
 
-                args, varargs, keywords, defaults = inspect.getargspec(
-                    methods['tick'])
+                    # Get all method names set
+                    all_methods_set = set(methods.keys())
 
-                # init method needs to have two args, self and data
-                if (not args or "self" not in args or "data" not in args):
-                    continue
+                    # Get required method names set
+                    required_methods_set = set(required_methods)
 
-                return name, obj
+                    # Make sure that the required names are in all names
+                    if not required_methods_set.issubset(all_methods_set):
+                        continue
+
+                    return name, obj
 
         # Nothing found
         return None, None

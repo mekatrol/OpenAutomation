@@ -26,7 +26,7 @@ class ScriptManager:
 
         # Load scripts
         for script_name in script_names:
-            name, module = script_helper.load_class(script_name, None)
+            name, module = script_helper.load_class(script_name, None, [ "init", "tick" ])
 
             # Only add if matching script module found in file
             if name != None and module != None:
