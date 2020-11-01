@@ -121,11 +121,7 @@ class Monitor:
 
 
 class HostController:
-    def __init__(self, config, mqtt, topic_host_name):
-        if not "io" in config or not "monitors" in config["io"] or mqtt == None:
-            # Nothing to monitor and publish
-            return
-
+    def __init__(self, monitors, mqtt, topic_host_name):
         # Keep reference to mqtt client
         self._mqtt = mqtt
 
@@ -133,8 +129,7 @@ class HostController:
         self._topic_host_name = topic_host_name
 
         # Create the monitor items from the monitor config
-        self._monitors = [Monitor(c)
-                          for c in config["io"]["monitors"]]
+        self._monitors = [Monitor(c) for c in monitors]
 
     def tick(self):
         for item in self._monitors:

@@ -6,9 +6,11 @@ import socket
 
 import RPi.GPIO as GPIO
 
-from devices.host_controller import HostController
 from communication.mqtt import Mqtt
+from devices.host_controller import HostController
 from devices.io_manager import IoManager
+from devices.script_manager import ScriptManager
+from helpers.dictionary_helper import DictionaryHelper
 
 CONFIG_FILE_NAME = "config.json"
 
@@ -24,31 +26,43 @@ def main():
 
     try:
         with open(CONFIG_FILE_NAME) as f:
-            config = json.load(f)
+            config = DictionaryHelper(json.load(f), "config")
     except Exception as ex:
         print("Error: " + ex.output)
         return
 
+    # Get app section
+    app_config = config.get_config_section("app")
+
     # Default to 3 seconds
-    loopSleepTime = 3
+    loopSleepTime = app_config.get_float(
+        "loopSleepTime", False, default=0.2, min_value=0.1)
 
-    # Override with config value (if defined)
-    if "app" in config and "loopSleepTime" in config["app"]:
-        loopSleepTime = config["app"]["loopSleepTime"]
-
-    # Read the host name if defined (can be used for string formatting)
-    if "mqtt" in config and "topicHostName" in config["mqtt"]:
-        topic_host_name = config["mqtt"]["topicHostName"]
-    else:
+    # Get mqtt section
+    mqtt_config = config.get_config_section("mqtt")
+    topic_host_name = mqtt_config.get_str("topicHostName", True, default=None)
+    if topic_host_name == None:
         topic_host_name = socket.gethostname()
 
     # Create the MQTT instance
-    mqtt = Mqtt(config)
+    mqtt = Mqtt(mqtt_config)
     mqtt.connect()
 
-    host_controller = HostController(config, mqtt, topic_host_name)
+    io_config = config.get_config_section("io")    
+    if io_config != None:
+        io_manager = IoManager(io_config, mqtt, topic_host_name)
 
-    io_manager = IoManager(config, mqtt, topic_host_name)
+    host_controller = None
+    monitors = io_config.get_any("monitors")    
+    if monitors != None:
+        host_controller = HostController(monitors, mqtt, topic_host_name)
+
+    script_manager = None    
+    scripts_path = app_config.get_str("scriptsPath", True, default=None)
+
+    if scripts_path != None:
+        script_manager = ScriptManager()
+        script_manager.load_scripts(scripts_path)
 
     # Create temp sensor
     # base_dir = '/sys/bus/w1/devices/'
@@ -66,10 +80,15 @@ def main():
             mqtt.loop(10)
 
             # Process host monitor tick
-            host_controller.tick()
+            if host_controller != None:
+                host_controller.tick()
 
             # Process IO
             io_manager.tick(mqtt)
+
+            # Process scripts
+            if script_manager != None:
+                script_manager.tick()
 
             mister_sw = io_manager.input("mister_switch")
             if mister_sw and mister_sw != mister_sw_last_tick:

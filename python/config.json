@@ -1,6 +1,7 @@
 {
     "app": {
-        "loopSleepTime": 0.2
+        "loopSleepTime": 0.2,
+        "scriptsPath": "/home/pi/scripts"
     },
     "io": {
         "gpioPinNumberingMode": "BCM",
@@ -125,7 +126,7 @@
                 "clear": null
             }
         ],
-        "virtual": [
+        "virtuals": [
             {
                 "key": "lightOnTime",
                 "name": "Light on time (mins)",

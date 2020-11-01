@@ -39,25 +39,15 @@ class Mqtt:
         self.client.on_connect = on_connect
         self.client.on_message = on_message
 
-        # Get username and password (if configured)
-        if "mqtt" in config:
-            if "broker" in config["mqtt"]:
-                if "host" in config["mqtt"]["broker"]:
-                    self.mqtt_broker_host = config["mqtt"]["broker"]["host"]
+        broker_config = config.get_config_section("broker")
 
-                if "port" in config["mqtt"]["broker"]:
-                    self.mqtt_broker_port = config["mqtt"]["broker"]["port"]
+        self.mqtt_broker_host = broker_config.get_str("host", False, default=None)
+        self.mqtt_broker_port = broker_config.get_int("port", False, default=8123)
+        self.mqtt_keep_alive = broker_config.get_int("keep_alive", False, default=60)
+        self.mqtt_username = broker_config.get_str("username", True, default=None)
+        self.mqtt_password = broker_config.get_str("password", True, default=None)
 
-                if "keep_alive" in config["mqtt"]["broker"]:
-                    self.mqtt_keep_alive = config["mqtt"]["broker"]["keep_alive"]
-
-                if "username" in config["mqtt"]["broker"]:
-                    self.mqtt_username = config["mqtt"]["broker"]["username"]
-
-                if "password" in config["mqtt"]["broker"]:
-                    self.mqtt_password = config["mqtt"]["broker"]["password"]
-
-        if not self.mqtt_username == None:
+        if self.mqtt_username != None:
             self.client.username_pw_set(
                 self.mqtt_username,
                 password=self.mqtt_password)

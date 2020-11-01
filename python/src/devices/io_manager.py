@@ -10,18 +10,11 @@ from points.virtual import Virtual
 class IoManager:
     def __init__(self, config, mqtt, topic_host_name):
         # If no IO section then don't process further
-        if not "io" in config:
+        if not config:
             return
 
-        # Get IO config
-        io_conf = config["io"]
-
         # Get GPIO pin numbering mode
-        if not "gpioPinNumberingMode" in io_conf:
-            # Need pin numbering mode to be able to use IO
-            raise Exception(
-                "The pin numbering mode has not been defined (using the 'gpioPinNumberingMode' property (valid values: 'BCM', 'BOARD')")
-        pin_numbering_mode = io_conf["gpioPinNumberingMode"]
+        pin_numbering_mode = config.get_str("gpioPinNumberingMode", True, default="BCM")
 
         # Set GPIO pin numbering mode
         if pin_numbering_mode == "BCM":
@@ -39,20 +32,24 @@ class IoManager:
         self.dedicated_outputs = {}
 
         # Initialise inputs
-        if "inputs" in io_conf:
-            self.__init_inputs(io_conf["inputs"])
+        inputs = config.get_any("inputs")
+        if inputs != None:
+            self.__init_inputs(inputs)
 
         # Initialise outputs
-        if "outputs" in io_conf:
-            self.__init_outputs(io_conf["outputs"])
+        outputs = config.get_any("outputs")
+        if outputs != None:
+            self.__init_outputs(outputs)
 
         # Initialise virtual points
-        if "virtual" in io_conf:
-            self.__init_virtuals(io_conf["virtual"])
+        virtuals = config.get_any("virtuals")
+        if virtuals != None:
+            self.__init_virtuals(virtuals)
 
         # Initialise shift registers
-        if "shiftRegisters" in io_conf:
-            self.__init_shift_registers(io_conf["shiftRegisters"])
+        shift_registers = config.get_any("shiftRegisters")
+        if shift_registers != None:
+            self.__init_shift_registers(shift_registers)
 
         self._mqtt = mqtt
         self._topic_host_name = topic_host_name
@@ -319,7 +316,7 @@ class IoManager:
 
         # Iterate shift register configurations
         for shift_register_config in shift_registers:
-            config = DictionaryHelper(shift_register_config, "input")
+            config = DictionaryHelper(shift_register_config, "shift register")
 
             # Get property values from config
             key = config.get_str("key", False, None)
