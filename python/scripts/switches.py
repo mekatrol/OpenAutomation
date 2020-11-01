@@ -21,9 +21,16 @@ class ScriptModule:
         # Get the switch value
         sw_value = data.inputs[self.input_name].value
 
+        # Get the current output value
+        op_value = data.outputs[self.output_name].value
+
         # Set output if switch is on
         if sw_value and sw_value != self.sw_value_last_tick:
-            data.outputs[self.output_name].value = 1
+            # Toggle output value
+            if op_value > 0:
+                data.outputs[self.output_name].value = 0
+            else:
+                data.outputs[self.output_name].value = 1
 
-        # Remember value for next tick
+        # Remember switch value for next tick
         self.sw_value_last_tick = sw_value

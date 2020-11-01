@@ -129,8 +129,11 @@ class ScriptManager:
                 inputs, outputs, virtuals, self._variables)
 
             try:
-                module_instance.module.tick(
-                    module_instance.module, module_data)
+                if not module_instance.module.tick(
+                        module_instance.module, module_data):
+                    # If the module returned false then
+                    # don't process any more modules
+                    break
             except (RuntimeError, TypeError, NameError, ValueError) as error:
                 print(error)
 
