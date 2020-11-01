@@ -1,41 +1,51 @@
-import imp
-import sys
+import importlib
+import inspect
+import os
 
 
 class ScriptHelper:
-    __init__(self, script_path):
+    def __init__(self, script_path):
+        if not script_path.endswith("/"):
+            script_path += "/"
+
         self.script_path = script_path
 
-    def load_class(self, name, class_name):
+    def load_class(self, file_name_with_path, class_name):
+        # Get file name and module name from full path
+        file_name = os.path.basename(file_name_with_path)
+        module_name = os.path.splitext(file_name)[0]
 
-        # find_module() method is used
-        # to find the module and return
-        # its description and path
-        try:
-            fp, path, desc = imp.find_module(name)
+        # Build import spec
+        spec = importlib.util.spec_from_file_location(
+            module_name, self.script_path + file_name)
 
-        except ImportError:
-            print("module not found: " + name)
+        # Load the module
+        module = importlib.util.module_from_spec(spec)
 
-        try:
-            # load_modules loads the module
-            # dynamically ans takes the filepath
-            # module and description as parameter
-            example_package = imp.load_module(name, fp, path, desc)
+        # Execute module loading
+        spec.loader.exec_module(module)
 
-        except Exception as e:
-            print(e)
+        # Iterate members
+        for name, obj in inspect.getmembers(module):
+            # Looking for a class (with matching calss name if specified)
+            if inspect.isclass(obj) and (class_name == None or name == class_name):
 
-        try:
-            myclass = imp.load_module("%s.%s" % (
-                name, class_name), fp, path, desc)
+                # Get methods of the class
+                methods = dict((name, func) for name, func
+                               in inspect.getmembers(obj))
 
-        except Exception as e:
-            print(e)
+                # The init and tick methods are mandatory
+                if not "tick" in methods or not "init" in methods:
+                    continue
 
-        return example_package, myclass
+                args, varargs, keywords, defaults = inspect.getargspec(
+                    methods['tick'])
 
-    #  Driver code
-    if __name__ == "__main__":
-        mod, modCl = dynamic_imp("GFG", "addNumbers")
-        modCl.addNumbers(1, 2)
+                # init method needs to have two args, self and data
+                if (not args or "self" not in args or "data" not in args):
+                    continue
+
+                return name, obj
+
+        # Nothing found
+        return None, None
