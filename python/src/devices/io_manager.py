@@ -193,6 +193,8 @@ class IoManager:
             # Get the output values for the shift register
             outputs = bytes(shift_register.output_values)
 
+            print(f"Outputs: {outputs}")
+
             # Shift values to output shift register
             shift_register.clear_latch()
             shift_register.shift_bytes(outputs)
