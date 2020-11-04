@@ -14,7 +14,8 @@ class IoManager:
             return
 
         # Get GPIO pin numbering mode
-        pin_numbering_mode = config.get_str("gpioPinNumberingMode", True, default="BCM")
+        pin_numbering_mode = config.get_str(
+            "gpioPinNumberingMode", True, default="BCM")
 
         # Set GPIO pin numbering mode
         if pin_numbering_mode == "BCM":
@@ -325,6 +326,8 @@ class IoManager:
             devices = config.get_int("devices", False, 1)
             outputs_per_device = config.get_int(
                 "outputsPerDevice", True, min_value=8)
+            invert_outputs = devices = config.get_bool(
+                "invertOutputs", True, False)
             data = config.get_str("data", False)
             clock = config.get_str("clock", False)
             latch = config.get_str("latch", False)
@@ -346,6 +349,6 @@ class IoManager:
 
             # Create and add shift register
             shift_register = ShiftRegister(
-                self, key, name, devices, outputs_per_device, data, clock, latch, oe, clear)
+                self, key, name, devices, outputs_per_device, invert_outputs, data, clock, latch, oe, clear)
 
             self._shift_registers[key] = shift_register

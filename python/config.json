@@ -141,6 +141,7 @@
                 "name": "Irrigation controller",
                 "devices": 1,
                 "outputsPerDevice": 8,
+                "invertOutputs": true,
                 "data": "sr1_data",
                 "clock": "sr1_clock",
                 "latch": "sr1_latch",

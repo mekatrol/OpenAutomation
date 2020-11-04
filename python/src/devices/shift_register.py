@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 
 class ShiftRegister:
     def __init__(self, io_manager,
-                 key, name, devices, outputs_per_device,
+                 key, name, devices, outputs_per_device, invert_outputs,
                  data, clock, latch, oe, clear):
 
         self.key = key
@@ -12,6 +12,7 @@ class ShiftRegister:
         self._io_manager = io_manager
         self._devices = devices
         self.outputs_per_device = outputs_per_device
+        self.invert_outputs = invert_outputs
         self._data = data
         self._clock = clock
         self._latch = latch
@@ -94,6 +95,9 @@ class ShiftRegister:
             bit = 1
         else:
             bit = 0
+
+        if self.invert_outputs:
+            bit = ~bit
 
         # Clock bit value
         GPIO.output(self._data_pin, bit)

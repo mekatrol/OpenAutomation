@@ -59,6 +59,31 @@ class DictionaryHelper:
         # Return validated value
         return property_value
 
+    def get_bool(self, property_name, optional=True, default=None):
+        if not property_name in self._dict:
+
+            # If optional then just return default
+            if optional:
+                return default
+
+            raise Exception(
+                f"'{property_name}' property must be defined for all '{self._name}' value")
+
+        property_value = self._dict[property_name]
+
+        # Must have a value if not optional
+        if property_value == None and not optional:
+            raise Exception(
+                f"'{property_name}' property value must be set for all '{self._name}' value")
+
+        # Value must be a valid bool value
+        if property_value != None and not isinstance(property_value, bool):
+            raise Exception(
+                f"{property_name} property must be a valid bool value for {self._name}")
+
+        # Return validated value
+        return property_value
+
     def get_float(self, property_name, optional=True, default=None, min_value=None, max_value=None):
         if not property_name in self._dict:
 
