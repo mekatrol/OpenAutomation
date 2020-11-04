@@ -100,7 +100,7 @@ def main():
 
     finally:
         mqtt.close()
-        GPIO.close()
+        GPIO.cleanup()
 
 
 if __name__ == "__main__":
