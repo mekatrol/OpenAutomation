@@ -2,9 +2,9 @@ from points.point import IoPoint
 
 
 class Output(IoPoint):
-    def __init__(self, io_manager, key, name, description, device_type, pin, topic, interval, shift_register_key):
+    def __init__(self, io_manager, key, name, description, device_type, pin, topic, interval, value, shift_register_key):
         super().__init__(
-            key, name, description, 0, topic, interval)
+            key, name, description, value, topic, interval)
 
         self.device_type = device_type
         self.pin = pin

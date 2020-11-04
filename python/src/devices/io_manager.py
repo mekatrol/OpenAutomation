@@ -193,8 +193,6 @@ class IoManager:
             # Get the output values for the shift register
             outputs = bytes(shift_register.output_values)
 
-            print(f"Outputs: {outputs}")
-
             # Shift values to output shift register
             shift_register.clear_latch()
             shift_register.shift_bytes(outputs)
@@ -217,6 +215,7 @@ class IoManager:
             pin = config.get_int("pin", False, None, 0, 100)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
+            init = config.get_int("init", True, 0)
 
             # Can't add same key twice
             if key in self.inputs:
@@ -234,7 +233,7 @@ class IoManager:
 
             # Create the definition
             inp = Input(self, key, name, description, device_type,
-                        pin, pud, topic, interval)
+                        pin, pud, topic, interval, init)
 
             # Add to input dictionary
             self.inputs[key] = inp
@@ -259,6 +258,7 @@ class IoManager:
             pin = config.get_int("pin", False, None, 0, 100)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
+            init = config.get_int("init", True, 0)
             shift_register_key = config.get_str("shiftRegisterKey", True, None)
 
             # Can't add same key twice
@@ -277,7 +277,7 @@ class IoManager:
 
             # Create the definition
             out = Output(self, key, name, description, device_type, pin, topic,
-                         interval, shift_register_key)
+                         interval, init, shift_register_key)
 
             # Add to output dictionary
             self.outputs[key] = out
