@@ -46,8 +46,15 @@ class ShiftRegister:
         # hardware pin not defined, so do a software clear
         self.clear_latch()
 
+        # Assume a clear byte is all 0 bits
+        clear_byte = 0
+
+        # If outputs need to be inverted then invert bits
+        if self.invert_outputs:
+            clear_byte = ~clear_byte
+
         for i in range(self._devices):
-            self.shift_byte(0)
+            self.shift_byte(clear_byte)
 
         self.set_latch()
 

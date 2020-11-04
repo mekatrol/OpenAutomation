@@ -71,6 +71,8 @@ class ScriptManager:
             # Get required key
             key = module_config.get_str("key", False)
 
+            print(f"Loading module with key '{key}'")
+
             # Get required name
             name = module_config.get_str("name", False)
 
