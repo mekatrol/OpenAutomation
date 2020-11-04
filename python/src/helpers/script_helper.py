@@ -1,4 +1,4 @@
-import importlib
+from importlib import util
 import inspect
 import os
 
@@ -22,11 +22,11 @@ class ScriptHelper:
             return None, None
 
         # Build import spec
-        spec = importlib.util.spec_from_file_location(
+        spec = util.spec_from_file_location(
             module_name, self.script_path + file_name)
 
         # Load the module
-        module = importlib.util.module_from_spec(spec)
+        module = util.module_from_spec(spec)
 
         # Execute module loading
         spec.loader.exec_module(module)
