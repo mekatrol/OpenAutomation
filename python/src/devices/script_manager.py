@@ -71,8 +71,6 @@ class ScriptManager:
             # Get required key
             key = module_config.get_str("key", False)
 
-            print(f"Loading module with key '{key}'")
-
             # Get required name
             name = module_config.get_str("name", False)
 
@@ -131,8 +129,7 @@ class ScriptManager:
                 inputs, outputs, virtuals, self._variables)
 
             try:
-                if not module_instance.module.tick(
-                        module_instance.module, module_data):
+                if module_instance.module.tick(module_instance.module, module_data) == False:
                     # If the module returned false then
                     # don't process any more modules
                     break
