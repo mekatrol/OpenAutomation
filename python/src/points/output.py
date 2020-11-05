@@ -11,8 +11,6 @@ class Output(IoPoint):
         self.shift_register_key = shift_register_key
         self._io_manager = io_manager
 
-        self.value = 0
-
     def tick(self, topic_host_name):
         # Has any defined interval expired
         if not super().interval_expired():
