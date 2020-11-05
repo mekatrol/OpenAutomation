@@ -2,8 +2,9 @@ class Interval:
     def __init__(self, interval):
         self.interval = interval
 
-        # Init count down to interval
-        self._count_down = self.interval
+        # Init count down to < 0 so that
+        # it has expired on first run
+        self._count_down = -1
 
     def interval_expired(self):
         # If there is not interval then it has expired

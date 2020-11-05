@@ -35,7 +35,7 @@
                 "pin": 18,
                 "pud": "PUD_UP",
                 "interval": 3,
-                "value": 1,
+                "value": 0,
                 "invert": true
             },
             {
@@ -45,7 +45,7 @@
                 "pin": 24,
                 "pud": "PUD_UP",
                 "interval": 3,
-                "value": 1,
+                "value": 0,
                 "invert": true
             }
         ],
@@ -55,28 +55,28 @@
                 "name": "Shift register 1 data pin",
                 "deviceType": "GPIO",
                 "pin": 27,
-                "invert": true
+                "value": 0
             },
             {
                 "key": "sr1_clock",
                 "name": "Shift register 1 clock pin",
                 "deviceType": "GPIO",
                 "pin": 4,
-                "invert": true
+                "value": 0
             },
             {
                 "key": "sr1_latch",
                 "name": "Shift register 1 latch pin",
                 "deviceType": "GPIO",
                 "pin": 22,
-                "invert": true
+                "value": 0
             },
             {
                 "key": "sr1_oe",
                 "name": "Shift register 1 output enable pin",
                 "deviceType": "GPIO",
                 "pin": 17,
-                "invert": true
+                "value": 0
             },
             {
                 "key": "sr1_out1",
@@ -85,6 +85,7 @@
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
                 "pin": 1,
+                "value": 0,
                 "invert": true
             },
             {
@@ -94,6 +95,7 @@
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
                 "pin": 2,
+                "value": 0,
                 "invert": true
             },
             {
@@ -103,6 +105,7 @@
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
                 "pin": 3,
+                "value": 0,
                 "invert": true
             },
             {
@@ -112,6 +115,7 @@
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
                 "pin": 4,
+                "value": 0,
                 "invert": true
             },
             {
@@ -121,6 +125,7 @@
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
                 "pin": 5,
+                "value": 0,
                 "invert": true
             },
             {
@@ -130,6 +135,7 @@
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
                 "pin": 6,
+                "value": 0,
                 "invert": true
             },
             {
@@ -139,6 +145,7 @@
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
                 "pin": 7,
+                "value": 0,
                 "invert": true
             },
             {
@@ -148,6 +155,7 @@
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
                 "pin": 8,
+                "value": 0,
                 "invert": true
             }
         ],
