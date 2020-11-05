@@ -33,28 +33,18 @@ class ShiftRegister:
         # Create array to hold 8 bit values for each device
         self.output_values = [0] * devices
 
-        self.__init_pins()
-
-    def shift_clear_all(self):
-        # If hardware clear pin defined, use a hardware clear
-        if self._clear_pin != None:
-            GPIO.output(self._clear_pin, 0)
-            GPIO.output(self._clear_pin, 1)
-            return
-
-        # hardware pin not defined, so do a software clear
+    def shift_and_latch(self, byte_values):
+        # Clear latch
         self.clear_latch()
 
-        # Assume a clear byte is all 0 bits
-        clear_byte = 0
+        # Send output values to clear bits
+        self.shift_bytes(byte_values)
 
-        for i in range(self._devices):
-            self.shift_byte(clear_byte)
-
+        # Latch values
         self.set_latch()
 
-    def shift_bytes(self, bytes):
-        for byte in bytes:
+    def shift_bytes(self, byte_values):
+        for byte in byte_values:
             self.shift_byte(byte)
 
     def shift_byte(self, byte):
@@ -80,10 +70,6 @@ class ShiftRegister:
 
     def set_latch(self):
         GPIO.output(self._latch_pin, 1)
-
-    def __init_pins(self):
-        # Clear current registers
-        self.shift_clear_all()
 
     def __shift_bit(self, bit):
 
