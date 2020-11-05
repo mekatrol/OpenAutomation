@@ -34,7 +34,8 @@
                 "topic": "/monitor/control/in/{key}/{topicHostName}",
                 "pin": 18,
                 "pud": "PUD_UP",
-                "interval": 3
+                "interval": 3,
+                "value": 1
             },
             {
                 "key": "light_switch",
@@ -42,7 +43,8 @@
                 "topic": "/monitor/control/in/{key}/{topicHostName}",
                 "pin": 24,
                 "pud": "PUD_UP",
-                "interval": 3
+                "interval": 3,
+                "value": 1
             }
         ],
         "outputs": [
