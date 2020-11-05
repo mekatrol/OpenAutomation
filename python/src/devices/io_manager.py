@@ -249,7 +249,7 @@ class IoManager:
             pin = config.get_int("pin", False, None, 0, 100)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
-            init = config.get_int("init", True, 0)
+            init_value = config.get_int("initValue", True, 0)
             invert = config.get_bool("invert", True, False)
 
             # Can't add same key twice
@@ -268,7 +268,7 @@ class IoManager:
 
             # Create the definition
             inp = Input(self, key, name, description, device_type,
-                        pin, pud, topic, interval, init, invert)
+                        pin, pud, topic, interval, init_value, invert)
 
             # Add to input dictionary
             self.inputs[key] = inp
@@ -293,7 +293,7 @@ class IoManager:
             pin = config.get_int("pin", False, None, 0, 100)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
-            init = config.get_int("init", True, 0)
+            init_value = config.get_int("initValue", True, 0)
             invert = config.get_bool("invert", True, False)
             shift_register_key = config.get_str("shiftRegisterKey", True, None)
 
@@ -313,7 +313,7 @@ class IoManager:
 
             # Create the definition
             out = Output(self, key, name, description, device_type, pin, topic,
-                         interval, init, invert, shift_register_key)
+                         interval, init_value, invert, shift_register_key)
 
             # Add to output dictionary
             self.outputs[key] = out
@@ -336,7 +336,7 @@ class IoManager:
             description = config.get_str("description", True, None)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
-            value = config.get_any("value", True, 0.0)
+            initValue = config.get_any("initValue", True, 0.0)
 
             # Can't add same key twice
             if key in self.virtuals:
@@ -344,7 +344,7 @@ class IoManager:
 
             # Create the definition
             virt = Virtual(self, key, name, description,
-                           value, topic, interval)
+                           initValue, topic, interval)
 
             # Add to output dictionary
             self.virtuals[key] = virt
