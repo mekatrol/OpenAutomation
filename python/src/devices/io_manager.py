@@ -78,7 +78,7 @@ class IoManager:
             if normalised_val == 0:
                 normalised_val = 1
             else:
-                normalise_val = 0
+                normalised_val = 0
 
         return normalised_val
 
