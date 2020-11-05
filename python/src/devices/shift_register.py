@@ -85,9 +85,6 @@ class ShiftRegister:
         # Clear current registers
         self.shift_clear_all()
 
-        # Enable the outputs
-        self.enable_outputs()
-
     def __shift_bit(self, bit):
 
         # Coerce to:

@@ -231,6 +231,8 @@ class IoManager:
             shift_register.shift_bytes(outputs)
             shift_register.set_latch()
 
+            shift_register.enable_outputs()
+
     def __init_inputs(self, inputs):
         # Create input definition dictionary
         self.inputs = {}
