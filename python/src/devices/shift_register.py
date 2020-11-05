@@ -65,6 +65,9 @@ class ShiftRegister:
     def shift_byte(self, byte):
         GPIO.output(self._clock_pin, 0)
 
+        if self.invert_outputs:
+            byte = ~byte
+
         for i in range(8):
             bit = (0x80 >> i) & byte
             self.__shift_bit(bit)
@@ -102,9 +105,6 @@ class ShiftRegister:
             bit = 1
         else:
             bit = 0
-
-        if self.invert_outputs:
-            bit = ~bit
 
         # Clock bit value
         GPIO.output(self._data_pin, bit)
