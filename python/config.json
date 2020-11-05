@@ -35,7 +35,8 @@
                 "pin": 18,
                 "pud": "PUD_UP",
                 "interval": 3,
-                "value": 1
+                "value": 1,
+                "invert": true
             },
             {
                 "key": "light_switch",
@@ -44,7 +45,8 @@
                 "pin": 24,
                 "pud": "PUD_UP",
                 "interval": 3,
-                "value": 1
+                "value": 1,
+                "invert": true
             }
         ],
         "outputs": [
@@ -52,25 +54,29 @@
                 "key": "sr1_data",
                 "name": "Shift register 1 data pin",
                 "deviceType": "GPIO",
-                "pin": 27
+                "pin": 27,
+                "invert": true
             },
             {
                 "key": "sr1_clock",
                 "name": "Shift register 1 clock pin",
                 "deviceType": "GPIO",
-                "pin": 4
+                "pin": 4,
+                "invert": true
             },
             {
                 "key": "sr1_latch",
                 "name": "Shift register 1 latch pin",
                 "deviceType": "GPIO",
-                "pin": 22
+                "pin": 22,
+                "invert": true
             },
             {
                 "key": "sr1_oe",
                 "name": "Shift register 1 output enable pin",
                 "deviceType": "GPIO",
-                "pin": 17
+                "pin": 17,
+                "invert": true
             },
             {
                 "key": "sr1_out1",
@@ -78,7 +84,8 @@
                 "deviceType": "SR",
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "pin": 1
+                "pin": 1,
+                "invert": true
             },
             {
                 "key": "sr1_out2",
@@ -86,7 +93,8 @@
                 "deviceType": "SR",
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "pin": 2
+                "pin": 2,
+                "invert": true
             },
             {
                 "key": "sr1_out3",
@@ -94,7 +102,8 @@
                 "deviceType": "SR",
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "pin": 3
+                "pin": 3,
+                "invert": true
             },
             {
                 "key": "sr1_out4",
@@ -102,7 +111,8 @@
                 "deviceType": "SR",
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "pin": 4
+                "pin": 4,
+                "invert": true
             },
             {
                 "key": "sr1_out5",
@@ -110,7 +120,8 @@
                 "deviceType": "SR",
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "pin": 5
+                "pin": 5,
+                "invert": true
             },
             {
                 "key": "sr1_out6",
@@ -118,7 +129,8 @@
                 "deviceType": "SR",
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "pin": 6
+                "pin": 6,
+                "invert": true
             },
             {
                 "key": "sr1_out7",
@@ -126,7 +138,8 @@
                 "deviceType": "SR",
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "pin": 7
+                "pin": 7,
+                "invert": true
             },
             {
                 "key": "sr1_out8",
@@ -134,7 +147,8 @@
                 "deviceType": "SR",
                 "shiftRegisterKey": "sr1",
                 "topic": "monitor/control/out/{action}/{key}/{topicHostName}",
-                "pin": 8
+                "pin": 8,
+                "invert": true
             }
         ],
         "shiftRegisters": [
@@ -143,7 +157,6 @@
                 "name": "Irrigation controller",
                 "devices": 1,
                 "outputsPerDevice": 8,
-                "invertOutputs": true,
                 "data": "sr1_data",
                 "clock": "sr1_clock",
                 "latch": "sr1_latch",

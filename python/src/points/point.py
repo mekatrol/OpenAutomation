@@ -2,7 +2,7 @@ from points.interval import Interval
 
 
 class IoPoint(Interval):
-    def __init__(self, key, name, description, value, topic, interval):
+    def __init__(self, key, name, description, value, invert, topic, interval):
         super().__init__(interval)
 
         self.key = key
@@ -10,6 +10,7 @@ class IoPoint(Interval):
         self.description = description
         self.topic = topic
         self.value = value
+        self.invert = invert
 
     def build_topic(self, topic_host_name=None, action=None):
         # Get topic (if any)

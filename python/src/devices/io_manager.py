@@ -61,8 +61,26 @@ class IoManager:
         if not key in self.inputs:
             raise Exception(f"Invalid input key '{key}'")
 
+        inp = self.inputs[key]
+
         # Use GPIO to return value based in input config
-        return GPIO.input(self.inputs[key].pin)
+        val = GPIO.input(inp.pin)
+
+        # Assume input is zero
+        normalised_val = 0
+
+        # If input has positive value then set input to 1
+        if val > 0:
+            normalised_val = 1
+
+        # If the input should be inverted then toggle bit value
+        if inp.invert:
+            if normalised_val == 0:
+                normalised_val = 1
+            else:
+                normalise_val = 0
+
+        return normalised_val
 
     def toggle_output(self, key):
         # To write an ouput then the output config must exist
@@ -84,7 +102,22 @@ class IoManager:
 
         # Get the output
         out = self.outputs[key]
+
+        # Normalise value (ie < 0 becomes zero, > 1 becomes 1)
+        if value <= 0:
+            value = 0
+        else:
+            value = 1
+
+        # Set using normalised value
         out.set_value(value)
+
+        # Now we invert the actual hardware bit if inverted flag set
+        if out.invert:
+            if value == 0:
+                value = 1
+            else:
+                value = 0
 
         # If the output is a GPIO type then set output value using
         # GPIO library
@@ -216,6 +249,7 @@ class IoManager:
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
             init = config.get_int("init", True, 0)
+            invert = config.get_bool("init", True, False)
 
             # Can't add same key twice
             if key in self.inputs:
@@ -233,7 +267,7 @@ class IoManager:
 
             # Create the definition
             inp = Input(self, key, name, description, device_type,
-                        pin, pud, topic, interval, init)
+                        pin, pud, topic, interval, init, invert)
 
             # Add to input dictionary
             self.inputs[key] = inp
@@ -259,6 +293,7 @@ class IoManager:
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
             init = config.get_int("init", True, 0)
+            invert = config.get_bool("init", True, False)
             shift_register_key = config.get_str("shiftRegisterKey", True, None)
 
             # Can't add same key twice
@@ -277,7 +312,7 @@ class IoManager:
 
             # Create the definition
             out = Output(self, key, name, description, device_type, pin, topic,
-                         interval, init, shift_register_key)
+                         interval, init, invert, shift_register_key)
 
             # Add to output dictionary
             self.outputs[key] = out
@@ -328,8 +363,6 @@ class IoManager:
             devices = config.get_int("devices", False, 1)
             outputs_per_device = config.get_int(
                 "outputsPerDevice", True, min_value=8)
-            invert_outputs = devices = config.get_bool(
-                "invertOutputs", True, False)
             data = config.get_str("data", False)
             clock = config.get_str("clock", False)
             latch = config.get_str("latch", False)
@@ -351,6 +384,6 @@ class IoManager:
 
             # Create and add shift register
             shift_register = ShiftRegister(
-                self, key, name, devices, outputs_per_device, invert_outputs, data, clock, latch, oe, clear)
+                self, key, name, devices, outputs_per_device, data, clock, latch, oe, clear)
 
             self._shift_registers[key] = shift_register
