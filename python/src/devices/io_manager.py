@@ -249,7 +249,7 @@ class IoManager:
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
             init = config.get_int("init", True, 0)
-            invert = config.get_bool("init", True, False)
+            invert = config.get_bool("invert", True, False)
 
             # Can't add same key twice
             if key in self.inputs:
@@ -293,7 +293,7 @@ class IoManager:
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 3, 1, None)
             init = config.get_int("init", True, 0)
-            invert = config.get_bool("init", True, False)
+            invert = config.get_bool("invert", True, False)
             shift_register_key = config.get_str("shiftRegisterKey", True, None)
 
             # Can't add same key twice
