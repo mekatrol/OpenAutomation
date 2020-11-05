@@ -93,7 +93,8 @@ class ScriptManager:
             # Only add if matching script module found in file
             if name != None and module != None:
                 try:
-                    module.init(module, key, init_data)
+                    inputs, outputs, virtuals = self._create_points()
+                    module.init(module, key, init_data, inputs, outputs, virtuals)
                 except (RuntimeError, TypeError, NameError, ValueError) as error:
                     print(error)
 
@@ -103,19 +104,7 @@ class ScriptManager:
         self._modules.sort(key=self._get_module_priority)
 
     def tick(self):
-        inputs = {}
-        outputs = {}
-        virtuals = {}
-
-        # If there is an IO manager conver the points
-        # to virtual points for this tick
-        if self._io_manager != None:
-            inputs = {x.key: self._get_input(x) for x in
-                      self._io_manager.inputs.values()}
-            outputs = {x.key: self._get_output(x) for x in
-                       self._io_manager.outputs.values()}
-            virtuals = {x.key: self._get_virtual(x) for x in
-                        self._io_manager.virtuals.values()}
+        inputs, outputs, virtuals = self._create_points()
 
         for module_instance in self._modules:
             # Do not execute if interval not expired for module
@@ -144,6 +133,23 @@ class ScriptManager:
 
             for virtual_key in virtuals:
                 self._io_manager.virtuals[virtual_key].value = virtuals[virtual_key].value
+
+    def _create_points(self):
+        inputs = {}
+        outputs = {}
+        virtuals = {}
+
+        # If there is an IO manager convert the points
+        # to virtual points for this tick
+        if self._io_manager != None:
+            inputs = {x.key: self._get_input(x) for x in
+                      self._io_manager.inputs.values()}
+            outputs = {x.key: self._get_output(x) for x in
+                       self._io_manager.outputs.values()}
+            virtuals = {x.key: self._get_virtual(x) for x in
+                        self._io_manager.virtuals.values()}
+
+        return inputs, outputs, virtuals
 
     def _get_module_priority(self, module):
         return module.priority

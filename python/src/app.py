@@ -51,6 +51,9 @@ def main():
     io_config = config.get_config_section("io")    
     if io_config != None:
         io_manager = IoManager(io_config, mqtt, topic_host_name)
+        
+        # Process IO once to initialise values
+        io_manager.tick(mqtt)
 
     host_controller = None
     monitors = io_config.get_any("monitors")    

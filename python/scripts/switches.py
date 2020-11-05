@@ -1,21 +1,23 @@
 class ScriptModule:
-    def init(self, key, data):
+    def init(self, key, init_data, inputs, outputs, virtuals):
         self.key = key
-        if data == None:
+        if init_data == None:
             raise Exception(
-                f"Script module with key '{key}' missing required initialisation data")
+                f"Script module with key '{key}' missing required initialisation init data")
 
-        if not "input" in data:
+        if not "input" in init_data:
             raise Exception(
-                f"Script module with key '{key}' missing required data 'input' value")
+                f"Script module with key '{key}' missing required init data 'input' value")
 
-        if not "output" in data:
+        if not "output" in init_data:
             raise Exception(
-                f"Script module with key '{key}' missing required data 'output' value")
+                f"Script module with key '{key}' missing required inr data 'output' value")
 
-        self.input_name = data["input"]
-        self.output_name = data["output"]
-        self.sw_value_last_tick = 0
+        self.input_name = init_data["input"]
+        self.output_name = init_data["output"]
+
+        # Get the switch initial value
+        self.sw_value_last_tick = inputs[self.input_name].value
 
     def tick(self, data):
         # Get the switch value
