@@ -225,12 +225,14 @@ class IoManager:
 
             # Get the output values for the shift register
             outputs = bytes(shift_register.output_values)
+            print(outputs)
 
             # Shift values to output shift register
             shift_register.clear_latch()
             shift_register.shift_bytes(outputs)
             shift_register.set_latch()
 
+            # Once we have shifted values then we can enable outputs (if not already enabled)
             shift_register.enable_outputs()
 
     def __init_inputs(self, inputs):
