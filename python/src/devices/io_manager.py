@@ -320,7 +320,11 @@ class IoManager:
 
             # If a GPIO pin then configure hardware
             if device_type == "GPIO":
+                # Set to output
                 GPIO.setup(out.pin, GPIO.OUT)
+
+                # Set initial value
+                GPIO.output(out.pin, out.value)
 
     def __init_virtuals(self, virtuals):
         # Create virtuals definition dictionary
