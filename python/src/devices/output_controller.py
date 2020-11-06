@@ -9,7 +9,8 @@ class OutputController:
 
         for key in io_manager.outputs:
             out = io_manager.outputs[key]
-            topic = out.build_topic("set", self._topic_host_name)
+            topic = out.build_topic(
+                topic_host_name=self._topic_host_name, action="set")
 
             if topic:
                 mqtt.subscribe(topic, self.mqtt_callback, out)

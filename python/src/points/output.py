@@ -40,4 +40,4 @@ class Output(IoPoint):
 
     def _build_state_topic(self, topic_host_name):
         # Return topic (if template defined)
-        return super().build_topic(topic_host_name, action="state")
+        return super().build_topic(topic_host_name=topic_host_name, action="state")
