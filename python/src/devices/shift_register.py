@@ -44,7 +44,10 @@ class ShiftRegister:
         self.set_latch()
 
     def shift_bytes(self, byte_values):
-        for byte in byte_values:
+        # Reverse array order so that the last device is shifted first
+        reversed_byte_values = reversed(byte_values)
+
+        for byte in reversed_byte_values:
             self.shift_byte(byte)
 
     def shift_byte(self, byte):

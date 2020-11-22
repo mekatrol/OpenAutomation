@@ -16,11 +16,28 @@ class OutputController:
                 mqtt.subscribe(topic, self.mqtt_callback, out)
 
     def mqtt_callback(self, value, out):
+        # Translate known value types that an external MQTT publisher might provide (for safety)
+        # Values 0 and 1 are the default that we accept
+        if(value != 0 and value != 1):
+            if value == b"0" or value == b"off":
+                value = 0
+            elif value == b"1" or value == b"on":
+                value = 1
+            else:
+                # Turn off if value not recognised
+                value = 0
+
         topic = out.mqtt_callback(value, self._topic_host_name)
 
+        # If topic defeined then send value straight back
         if topic != None:
-            # Send value straight back if topic defined
-            self._mqtt.publish(topic, out.value)
+            # Convert value to MQTT b'off' or b'on'
+            if out.value == 0:
+                value = b'off'
+            elif out.value == 1:
+                value = b'on'
+            
+            self._mqtt.publish(topic, value)
 
     def tick(self):
         for key in self._io_manager.outputs:
