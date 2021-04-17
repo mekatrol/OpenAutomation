@@ -9,8 +9,8 @@
                 "order": 1,
                 "interval": 1,
                 "init": {
-                    "input": "mister_switch",
-                    "output": "sr1_out1"
+                    "input": "shutdown_switch",
+                    "output": "heater"
                 }
             },
             {
@@ -19,8 +19,8 @@
                 "order": 2,
                 "interval": 1,
                 "init": {
-                    "input": "light_switch",
-                    "output": "sr1_out2"
+                    "input": "pb1_switch",
+                    "output": "sr_out2"
                 }
             }
         ]
@@ -29,20 +29,20 @@
         "gpioPinNumberingMode": "BCM",
         "inputs": [
             {
-                "key": "mister_switch",
-                "name": "Mister switch",
-                "topic": "/monitor/control/in/{key}/{topicHostName}",
-                "pin": 18,
+                "key": "shutdown_switch",
+                "name": "Shutdown",
+                "topic": "{topicHostName}/in/{key}",
+                "pin": 21,
                 "pud": "PUD_UP",
                 "interval": 1,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "light_switch",
-                "name": "Light switch",
-                "topic": "/monitor/control/in/{key}/{topicHostName}",
-                "pin": 24,
+                "key": "pb1_switch",
+                "name": "Push Button 1",
+                "topic": "{topicHostName}/in/{key}",
+                "pin": 7,
                 "pud": "PUD_UP",
                 "interval": 1,
                 "initValue": 0,
@@ -51,188 +51,189 @@
         ],
         "outputs": [
             {
-                "key": "sr1_data",
-                "name": "Shift register 1 data pin",
-                "deviceType": "GPIO",
-                "pin": 27,
-                "initValue": 0
-            },
-            {
-                "key": "sr1_clock",
-                "name": "Shift register 1 clock pin",
+                "key": "sr_out_data",
+                "name": "Output shift register data pin",
                 "deviceType": "GPIO",
                 "pin": 4,
                 "initValue": 0
             },
             {
-                "key": "sr1_latch",
-                "name": "Shift register 1 latch pin",
+                "key": "sr_out_clock",
+                "name": "Output shift register clock pin",
                 "deviceType": "GPIO",
                 "pin": 22,
                 "initValue": 0
             },
             {
-                "key": "sr1_oe",
-                "name": "Shift register 1 output enable pin",
+                "key": "sr_out_latch",
+                "name": "Output shift register latch pin",
                 "deviceType": "GPIO",
-                "pin": 17,
+                "pin": 27,
+                "initValue": 0
+            },
+            {
+                "key": "sr_out_oe",
+                "name": "Output shift register output enable pin",
+                "deviceType": "GPIO",
+                "pin": 18,
                 "initValue": 1
             },
             {
-                "key": "sr1_out1",
+                "key": "heater",
                 "name": "Back Side Garden",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 1,
                 "initValue": 0,
+                "mqttPublishInterval": 50,
                 "invert": false
             },
             {
-                "key": "sr1_out2",
+                "key": "sr_out2",
                 "name": "Back Garden Area",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 2,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out3",
+                "key": "sr_out3",
                 "name": "Back Lawn",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 3,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out4",
+                "key": "sr_out4",
                 "name": "Greenhouse Garden",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 4,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out5",
+                "key": "sr_out5",
                 "name": "Front Garden Bed",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 5,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out6",
+                "key": "sr_out6",
                 "name": "Front Lawn - House Side",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 6,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out7",
+                "key": "sr_out7",
                 "name": "Front Lawn - BBQ Side",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 7,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out8",
+                "key": "sr_out8",
                 "name": "Master",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 8,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out9",
+                "key": "sr_out9",
                 "name": "S09",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 9,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out10",
+                "key": "sr_out10",
                 "name": "S10",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 10,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out11",
+                "key": "sr_out11",
                 "name": "S11",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 11,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out12",
+                "key": "sr_out12",
                 "name": "S12",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 12,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out13",
+                "key": "sr_out13",
                 "name": "S13",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 13,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out14",
+                "key": "sr_out14",
                 "name": "S014",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 14,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out15",
+                "key": "sr_out15",
                 "name": "S15",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 15,
                 "initValue": 0,
                 "invert": false
             },
             {
-                "key": "sr1_out16",
+                "key": "sr_out16",
                 "name": "S16",
                 "deviceType": "SR",
-                "shiftRegisterKey": "sr1",
+                "shiftRegisterKey": "sr_out",
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 16,
                 "initValue": 0,
@@ -241,14 +242,14 @@
         ],
         "shiftRegisters": [
             {
-                "key": "sr1",
-                "name": "Irrigation controller",
+                "key": "sr_out",
+                "name": "Outputs shift register",
                 "devices": 2,
                 "outputsPerDevice": 8,
-                "data": "sr1_data",
-                "clock": "sr1_clock",
-                "latch": "sr1_latch",
-                "oe": "sr1_oe",
+                "data": "sr_out_data",
+                "clock": "sr_out_clock",
+                "latch": "sr_out_latch",
+                "oe": "sr_out_oe",
                 "clear": null
             }
         ],
@@ -322,12 +323,12 @@
     },
     "mqtt": {
         "broker": {
-            "host": "192.168.1.44",
+            "host": "192.168.1.29",
             "port": 1883,
             "keep_alive": 60,
-            "username": "homeassistant",
-            "password": "phei6shei9foo2Nuid9eimooc4iesheD7tohphaequoow8LinaiTh2oi5oshei0d"
+            "username": "mqtt.broker",
+            "password": "#Connected789"
         },
-        "topicHostName": "irrigation"
+        "topicHostName": "dogkennel"
     }
 }

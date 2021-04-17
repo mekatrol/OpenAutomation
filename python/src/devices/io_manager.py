@@ -248,7 +248,9 @@ class IoManager:
             pud = config.get_str("pud", True, "PUD_OFF")
             pin = config.get_int("pin", False, None, 0, 100)
             topic = config.get_str("topic", True, None)
-            interval = config.get_int("interval", True, 3, 1, None)
+            interval = config.get_int("interval", True, 1, 1, None)
+            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds) 
+            mqtt_publish_interval = config.get_int("mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
             init_value = config.get_int("initValue", True, 0)
             invert = config.get_bool("invert", True, False)
 
@@ -268,7 +270,7 @@ class IoManager:
 
             # Create the definition
             inp = Input(self, key, name, description, device_type,
-                        pin, pud, topic, interval, init_value, invert)
+                        pin, pud, topic, interval, mqtt_publish_interval, init_value, invert)
 
             # Add to input dictionary
             self.inputs[key] = inp
@@ -292,7 +294,9 @@ class IoManager:
             device_type = config.get_str("deviceType", True, "GPIO")
             pin = config.get_int("pin", False, None, 0, 100)
             topic = config.get_str("topic", True, None)
-            interval = config.get_int("interval", True, 3, 1, None)
+            interval = config.get_int("interval", True, 1, 1, None)
+            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds) 
+            mqtt_publish_interval = config.get_int("mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
             init_value = config.get_int("initValue", True, 0)
             invert = config.get_bool("invert", True, False)
             shift_register_key = config.get_str("shiftRegisterKey", True, None)
@@ -313,7 +317,7 @@ class IoManager:
 
             # Create the definition
             out = Output(self, key, name, description, device_type, pin, topic,
-                         interval, init_value, invert, shift_register_key)
+                         interval, mqtt_publish_interval, init_value, invert, shift_register_key)
 
             # Add to output dictionary
             self.outputs[key] = out
@@ -339,7 +343,9 @@ class IoManager:
             name = config.get_str("name", True, None)
             description = config.get_str("description", True, None)
             topic = config.get_str("topic", True, None)
-            interval = config.get_int("interval", True, 3, 1, None)
+            interval = config.get_int("interval", True, 1, 1, None)
+            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds) 
+            mqtt_publish_interval = config.get_int("mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
             initValue = config.get_any("initValue", True, 0.0)
 
             # Can't add same key twice
@@ -348,7 +354,7 @@ class IoManager:
 
             # Create the definition
             virt = Virtual(self, key, name, description,
-                           initValue, topic, interval)
+                           initValue, topic, interval, mqtt_publish_interval)
 
             # Add to output dictionary
             self.virtuals[key] = virt
