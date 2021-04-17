@@ -31,12 +31,12 @@ class OutputController:
 
         # If topic defeined then send value straight back
         if topic != None:
-            # Convert value to MQTT b'off' or b'on'
-            if out.value == 0:
-                value = b'off'
-            elif out.value == 1:
-                value = b'on'
-            
+            # Convert value from b'off' or b'on' if specified in that format
+            if out.value == b'off':
+                value = 0
+            elif out.value == b'on':
+                value = 1
+
             self._mqtt.publish(topic, value)
 
     def tick(self):

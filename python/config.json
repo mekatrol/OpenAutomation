@@ -86,7 +86,8 @@
                 "topic": "{topicHostName}/out/{key}/{action}",
                 "pin": 1,
                 "initValue": 0,
-                "mqttPublishInterval": 50,
+                "interval": 5,
+                "mqttPublishInterval": 5,
                 "invert": false
             },
             {
