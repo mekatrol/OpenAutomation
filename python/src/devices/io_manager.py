@@ -5,6 +5,7 @@ from devices.output_controller import OutputController
 from points.input import Input
 from points.output import Output
 from points.virtual import Virtual
+from points.onewire import OneWire
 
 
 class IoManager:
@@ -46,6 +47,11 @@ class IoManager:
         virtuals = config.get_any("virtuals")
         if virtuals != None:
             self.__init_virtuals(virtuals)
+
+        # Initialise one wire points
+        onewires = config.get_any("onewires")
+        if onewires != None:
+            self.__init_onewires(onewires)
 
         # Initialise shift registers
         shift_registers = config.get_any("shiftRegisters")
@@ -180,9 +186,9 @@ class IoManager:
                 f"Invalid output type '{out_type}' for output with key '{key}'")
 
     def tick(self, mqtt):
-
         self._process_inputs()
         self._process_virtuals()
+        self._process_onewires()
         self._process_outputs()
         self._shift_values()
 
@@ -217,6 +223,18 @@ class IoManager:
             if topic != None:
                 self._mqtt.publish(topic, virt.value)
 
+    def _process_onewires(self):
+        for key in self.onewires:
+            # Get onewire
+            onewire = self.onewires[key]
+
+            # Process onewire
+            topic = onewire.tick(self._topic_host_name)
+
+            # If topic returned, then publish topic
+            if topic != None:
+                self._mqtt.publish(topic, onewire.value)
+
     def _shift_values(self):
         # For each shift register, update its ouput (shift its values)
         for key in self._shift_registers:
@@ -249,8 +267,9 @@ class IoManager:
             pin = config.get_int("pin", False, None, 0, 100)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 1, 1, None)
-            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds) 
-            mqtt_publish_interval = config.get_int("mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
+            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds)
+            mqtt_publish_interval = config.get_int(
+                "mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
             init_value = config.get_int("initValue", True, 0)
             invert = config.get_bool("invert", True, False)
 
@@ -295,8 +314,9 @@ class IoManager:
             pin = config.get_int("pin", False, None, 0, 100)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 1, 1, None)
-            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds) 
-            mqtt_publish_interval = config.get_int("mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
+            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds)
+            mqtt_publish_interval = config.get_int(
+                "mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
             init_value = config.get_int("initValue", True, 0)
             invert = config.get_bool("invert", True, False)
             shift_register_key = config.get_str("shiftRegisterKey", True, None)
@@ -344,9 +364,10 @@ class IoManager:
             description = config.get_str("description", True, None)
             topic = config.get_str("topic", True, None)
             interval = config.get_int("interval", True, 1, 1, None)
-            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds) 
-            mqtt_publish_interval = config.get_int("mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
-            initValue = config.get_any("initValue", True, 0.0)
+            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds)
+            mqtt_publish_interval = config.get_int(
+                "mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
+            init_value = config.get_any("initValue", True, 0.0)
 
             # Can't add same key twice
             if key in self.virtuals:
@@ -354,10 +375,41 @@ class IoManager:
 
             # Create the definition
             virt = Virtual(self, key, name, description,
-                           initValue, topic, interval, mqtt_publish_interval)
+                           init_value, topic, interval, mqtt_publish_interval)
 
             # Add to output dictionary
             self.virtuals[key] = virt
+
+    def __init_onewires(self, onewires):
+        # Create onewires definition dictionary
+        self.onewires = {}
+
+        # Iterate virtual configurations
+        for onewire_config in onewires:
+            config = DictionaryHelper(onewire_config, "onewire")
+
+            # Get property values from config
+            key = config.get_str("key", False, None)
+            name = config.get_str("name", True, None)
+            description = config.get_str("description", True, None)
+            topic = config.get_str("topic", True, None)
+            interval = config.get_int("interval", True, 1, 1, None)
+            # Calculate default publish interval as the number of ticks per second X 10 (a tick is every 0.2 seconds)
+            mqtt_publish_interval = config.get_int(
+                "mqttPublishInterval", True, (1 / (0.2 * interval)) * 10, 1)
+            init_value = config.get_any("initValue", True, 0.0)
+            file_name = config.get_str("file", False, None)
+
+            # Can't add same key twice
+            if key in self.onewires:
+                raise Exception("OneWire with key '{key}' already defined")
+
+            # Create the definition
+            onewire = OneWire(self, key, name, description, file_name,
+                              init_value, topic, interval, mqtt_publish_interval)
+
+            # Add to output dictionary
+            self.onewires[key] = onewire
 
     def __init_shift_registers(self, shift_registers):
         # Create shift register instance dictionary

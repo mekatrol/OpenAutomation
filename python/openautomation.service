@@ -1,0 +1,13 @@
+[Unit]
+Description=Heater Service
+
+[Service]
+WorkingDirectory=/home/pi/OpenAutomation/python
+ExecStart=/usr/bin/python3 /home/pi/OpenAutomation/python/src/app.py > /home/pi/openautomation.log 2>&1
+Restart=always
+RestartSec=10
+SyslogIdentifier=Heater Service
+User=pi
+
+[Install]
+WantedBy=multi-user.target
