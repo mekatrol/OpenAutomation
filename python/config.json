@@ -2,28 +2,7 @@
     "app": {
         "loopSleepTime": 0.2,
         "scriptsPath": "/home/pi/OpenAutomation/python/scripts/",
-        "scripts": [
-            {
-                "key": "mister",
-                "name": "switches.py",
-                "order": 1,
-                "interval": 1,
-                "init": {
-                    "input": "shutdown_switch",
-                    "output": "heater"
-                }
-            },
-            {
-                "key": "lights",
-                "name": "switches.py",
-                "order": 2,
-                "interval": 1,
-                "init": {
-                    "input": "pb1_switch",
-                    "output": "sr_out2"
-                }
-            }
-        ]
+        "scripts": []
     },
     "io": {
         "gpioPinNumberingMode": "BCM",
@@ -116,14 +95,24 @@
         ],
         "virtuals": [
             {
-                "key": "lightOnTime",
-                "name": "Light on time (mins)",
-                "description": "The amount of time to turn on the light when the button is pressed",
+                "key": "heater_on_setpoint",
+                "name": "Heater On Setpoint",
                 "type": "float",
-                "initValue": 30,
+                "initValue": 10,
                 "units": "mins",
-                "interval": 30,
-                "topic": "monitor/control/virtual/{action}/{key}/{topicHostName}"
+                "interval": 10,
+                "mqttPublishInterval": 1,
+                "topic": "{topicHostName}/virtual/{key}/{action}"
+            },
+            {
+                "key": "heater_off_setpoint",
+                "name": "Heater Off Setpoint",
+                "type": "float",
+                "initValue": 14,
+                "units": "mins",
+                "interval": 10,
+                "mqttPublishInterval": 1,
+                "topic": "{topicHostName}/virtual/{key}/{action}"
             }
         ],
         "onewires": [
@@ -134,7 +123,7 @@
                 "file": "28-000005d25f50",
                 "interval": 5,
                 "mqttPublishInterval": 1,
-                "initValue": 20
+                "initValue": -100
             },
             {
                 "key": "temperature_2",
@@ -143,7 +132,7 @@
                 "file": "28-000005d3b4cc",
                 "interval": 5,
                 "mqttPublishInterval": 1,
-                "initValue": 20
+                "initValue": -100
             }
         ],
         "monitors": [
