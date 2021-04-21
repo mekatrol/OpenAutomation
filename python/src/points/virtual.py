@@ -17,3 +17,11 @@ class Virtual(IoPoint):
             return super().build_topic(topic_host_name, action="state")
 
         return None
+
+    def mqtt_callback(self, value, topic_host_name):
+
+        # Update value
+        self.value = float(value)
+
+        # Send state out to listeners
+        return super().build_topic(topic_host_name, action="state")

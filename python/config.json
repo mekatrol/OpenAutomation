@@ -2,7 +2,18 @@
     "app": {
         "loopSleepTime": 0.2,
         "scriptsPath": "/home/pi/OpenAutomation/python/scripts/",
-        "scripts": []
+        "scripts": [
+            {
+                "key": "mister",
+                "name": "heater.py",
+                "order": 1,
+                "interval": 1,
+                "init": {
+                    "onewire": "temperature_1",
+                    "output": "heater"
+                }
+            }
+        ]
     },
     "io": {
         "gpioPinNumberingMode": "BCM",
@@ -95,21 +106,21 @@
         ],
         "virtuals": [
             {
-                "key": "heater_on_setpoint",
-                "name": "Heater On Setpoint",
+                "key": "heater_setpoint",
+                "name": "Heater setpoint",
                 "type": "float",
                 "initValue": 10,
-                "units": "mins",
+                "units": "°C",
                 "interval": 10,
                 "mqttPublishInterval": 1,
                 "topic": "{topicHostName}/virtual/{key}/{action}"
             },
             {
-                "key": "heater_off_setpoint",
-                "name": "Heater Off Setpoint",
+                "key": "heater_pb",
+                "name": "Heater proportional band",
                 "type": "float",
-                "initValue": 14,
-                "units": "mins",
+                "initValue": 1,
+                "units": "°C",
                 "interval": 10,
                 "mqttPublishInterval": 1,
                 "topic": "{topicHostName}/virtual/{key}/{action}"
@@ -121,6 +132,7 @@
                 "name": "Temperature 1",
                 "topic": "{topicHostName}/temperature/{key}",
                 "file": "28-000005d25f50",
+                "units": "°C",
                 "interval": 5,
                 "mqttPublishInterval": 1,
                 "initValue": -100
@@ -130,6 +142,7 @@
                 "name": "Temperature 2",
                 "topic": "{topicHostName}/temperature/{key}",
                 "file": "28-000005d3b4cc",
+                "units": "°C",
                 "interval": 5,
                 "mqttPublishInterval": 1,
                 "initValue": -100

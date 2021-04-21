@@ -33,6 +33,10 @@ class IoManager:
         self.dedicated_inputs = {}
         self.dedicated_outputs = {}
 
+        # Set instance fields
+        self._mqtt = mqtt
+        self._topic_host_name = topic_host_name
+
         # Initialise inputs
         inputs = config.get_any("inputs")
         if inputs != None:
@@ -58,8 +62,6 @@ class IoManager:
         if shift_registers != None:
             self.__init_shift_registers(shift_registers)
 
-        self._mqtt = mqtt
-        self._topic_host_name = topic_host_name
         self._output_controller = OutputController(self, mqtt, topic_host_name)
 
     def input(self, key):
@@ -380,6 +382,12 @@ class IoManager:
             # Add to output dictionary
             self.virtuals[key] = virt
 
+            topic = virt.build_topic(
+                topic_host_name=self._topic_host_name, action="set")
+
+            if topic:
+                self._mqtt.subscribe(topic, self.mqtt_callback, virt)
+
     def __init_onewires(self, onewires):
         # Create onewires definition dictionary
         self.onewires = {}
@@ -450,3 +458,10 @@ class IoManager:
                 self, key, name, devices, outputs_per_device, data, clock, latch, oe, clear)
 
             self._shift_registers[key] = shift_register
+
+    def mqtt_callback(self, value, point):
+        topic = point.mqtt_callback(value, self._topic_host_name)
+
+        # If topic defeined then send value straight back
+        if topic != None:
+            self._mqtt.publish(topic, point.value)

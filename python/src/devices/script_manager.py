@@ -26,17 +26,18 @@ class ModuleVariables:
         self.persited = {}
 
     # Make a clone of current variables and set module variables
-    def clone(self, module_varables):
+    def clone(self, module_variables):
         cloned = copy.deepcopy(self)
         cloned.module = module_variables
         return cloned
 
 
 class ModuleData:
-    def __init__(self, inputs, outputs, virtuals, variables):
+    def __init__(self, inputs, outputs, virtuals, onewires, variables):
         self.inputs = inputs
         self.outputs = outputs
         self.virtuals = virtuals
+        self.onewires = onewires
         self.variables = variables
 
 
@@ -93,8 +94,9 @@ class ScriptManager:
             # Only add if matching script module found in file
             if name != None and module != None:
                 try:
-                    inputs, outputs, virtuals = self._create_points()
-                    module.init(module, key, init_data, inputs, outputs, virtuals)
+                    inputs, outputs, virtuals, onewires = self._create_points()
+                    module.init(module, key, init_data,
+                                inputs, outputs, virtuals, onewires)
                 except (RuntimeError, TypeError, NameError, ValueError) as error:
                     print(error)
 
@@ -104,7 +106,7 @@ class ScriptManager:
         self._modules.sort(key=self._get_module_priority)
 
     def tick(self):
-        inputs, outputs, virtuals = self._create_points()
+        inputs, outputs, virtuals, onewires = self._create_points()
 
         for module_instance in self._modules:
             # Do not execute if interval not expired for module
@@ -115,7 +117,7 @@ class ScriptManager:
             self._variables.module = module_instance.variables
 
             module_data = ModuleData(
-                inputs, outputs, virtuals, self._variables)
+                inputs, outputs, virtuals, onewires, self._variables)
 
             try:
                 if module_instance.module.tick(module_instance.module, module_data) == False:
@@ -126,7 +128,7 @@ class ScriptManager:
                 print(error)
 
         if self._io_manager != None:
-            # Now we need to update the real outputs nad virtuals from any
+            # Now we need to update the real outputs and virtuals from any
             # values modified in the scripts
             for output_key in outputs:
                 self._io_manager.outputs[output_key].value = outputs[output_key].value
@@ -138,6 +140,7 @@ class ScriptManager:
         inputs = {}
         outputs = {}
         virtuals = {}
+        onewires = {}
 
         # If there is an IO manager convert the points
         # to virtual points for this tick
@@ -148,8 +151,10 @@ class ScriptManager:
                        self._io_manager.outputs.values()}
             virtuals = {x.key: self._get_virtual(x) for x in
                         self._io_manager.virtuals.values()}
+            onewires = {x.key: self._get_onewire(x) for x in
+                        self._io_manager.onewires.values()}
 
-        return inputs, outputs, virtuals
+        return inputs, outputs, virtuals, onewires
 
     def _get_module_priority(self, module):
         return module.priority
@@ -162,3 +167,6 @@ class ScriptManager:
 
     def _get_virtual(self, virtual):
         return ModulePoint(virtual.key, virtual.name, virtual.value)
+
+    def _get_onewire(self, onewire):
+        return ModulePoint(onewire.key, onewire.name, onewire.value)

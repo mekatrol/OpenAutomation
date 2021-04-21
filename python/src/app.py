@@ -76,9 +76,6 @@ def main():
     # device_file_name = device_folder + '/w1_slave'
 
     try:
-        mister_sw_last_tick = 0
-        light_sw_last_tick = 0
-
         while True:
 
             # Process MQTT loop
